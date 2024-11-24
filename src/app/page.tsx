@@ -1,4 +1,3 @@
-import Head from "next/head";
 import BoardList from "../components/BoardList";
 import AddBoard from "../components/AddBoard";
 
