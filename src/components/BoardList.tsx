@@ -1,23 +1,70 @@
 "use client";
 import React from "react";
-import BoardCard from "./BoardCard";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useBoardStore } from "../store/useBoardStore";
+import Board from "./Board";
 
 const BoardList: React.FC = () => {
   const boards = useBoardStore((state) => state.boards);
-  const deleteBoard = useBoardStore((state) => state.deleteBoard);
+  const reorderBoards = useBoardStore((state) => state.reorderBoards);
+  const moveCard = useBoardStore((state) => state.moveCard);
+
+  const onDragEnd = (result: any) => {
+    const { source, destination, type } = result;
+
+    // Dropped outside of any droppable
+    if (!destination) return;
+
+    // No movement
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) {
+      return;
+    }
+
+    if (type === "BOARD") {
+      reorderBoards(source.index, destination.index);
+    }
+
+    if (type === "CARD") {
+      moveCard(
+        source.droppableId,
+        destination.droppableId,
+        source.index,
+        destination.index
+      );
+    }
+  };
 
   return (
-    <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {boards.map((board) => (
-        <BoardCard
-          key={board.id}
-          id={board.id}
-          name={board.name}
-          onDelete={deleteBoard}
-        />
-      ))}
-    </div>
+    <DragDropContext onDragEnd={onDragEnd}>
+      <Droppable droppableId="boardList" direction="horizontal" type="BOARD">
+        {(provided) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className="flex gap-4 p-4 min-h-screen overflow-x-auto text-black"
+          >
+            {boards.map((board, index) => (
+              <Draggable key={board.id} draggableId={board.id} index={index}>
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    className="h-[200px]"
+                  >
+                    <Board id={board.id} name={board.name} index={index} />
+                  </div>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
   );
 };
 
