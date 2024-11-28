@@ -1,6 +1,11 @@
 "use client";
 import React from "react";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "@hello-pangea/dnd";
 import { useBoardStore } from "../store/useBoardStore";
 import Board from "./Board";
 
@@ -9,7 +14,7 @@ const BoardList: React.FC = () => {
   const reorderBoards = useBoardStore((state) => state.reorderBoards);
   const moveCard = useBoardStore((state) => state.moveCard);
 
-  const onDragEnd = (result: any) => {
+  const onDragEnd = (result: DropResult) => {
     const { source, destination, type } = result;
 
     // Dropped outside of any droppable

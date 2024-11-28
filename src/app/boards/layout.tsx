@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Boards",
@@ -18,12 +19,12 @@ export default function RootLayout({
           <header className="bg-blue-600 text-white py-4 shadow-md">
             <div className="container mx-auto flex justify-between items-center">
               <h1 className="text-2xl font-bold">PlanIt</h1>
-              <a
+              <Link
                 href="/"
                 className="px-4 py-2 bg-white text-blue-600 rounded-md font-medium shadow hover:bg-gray-100 transition"
               >
                 Home
-              </a>
+              </Link>
             </div>
           </header>
 
