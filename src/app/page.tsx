@@ -1,15 +1,17 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-50 via-blue-100 to-blue-200 flex flex-col items-center justify-center text-gray-800">
       <header className="w-full px-8 py-4 bg-white shadow-md fixed top-0 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-blue-600">PlanIt</h1>
         <nav>
-          <a
+          <Link
             href="/boards"
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
           >
             Go to Boards
-          </a>
+          </Link>
         </nav>
       </header>
 
@@ -21,12 +23,12 @@ export default function Home() {
           PlanIt is a modern task management tool to streamline your workflow,
           organize your tasks, and collaborate effectively with your team.
         </p>
-        <a
+        <Link
           href="/boards"
           className="px-6 py-3 bg-blue-500 text-white rounded-full text-lg font-medium shadow-md hover:bg-blue-600 transition"
         >
           Get Started
-        </a>
+        </Link>
       </main>
 
       <section className="py-12 bg-white w-full">

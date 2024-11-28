@@ -15,7 +15,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={` antialiased bg-white`}>
         <div className="min-h-screen flex flex-col">
-          {/* Navbar */}
           <header className="bg-blue-600 text-white py-4 shadow-md">
             <div className="container mx-auto flex justify-between items-center">
               <h1 className="text-2xl font-bold">PlanIt</h1>
@@ -28,7 +27,6 @@ export default function RootLayout({
             </div>
           </header>
 
-          {/* Main Content */}
           <main className="flex-grow container mx-auto p-4">{children}</main>
         </div>
       </body>
