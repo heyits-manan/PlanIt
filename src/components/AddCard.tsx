@@ -25,11 +25,11 @@ const AddCard: React.FC<AddCardProps> = ({ boardId }) => {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="New Card"
-        className="p-2 h-14 border border-gray-300 text-black rounded-md"
+        className="p-2 h-[50px] w-[200px] border border-gray-300 text-black rounded-md"
       />
       <button
         type="submit"
-        className="bg-green-500 text-white p-1 h-14 rounded-md"
+        className="bg-green-500 text-white p-3 h-[50px] rounded-md"
       >
         Add Card
       </button>

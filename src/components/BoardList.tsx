@@ -44,7 +44,7 @@ const BoardList: React.FC = () => {
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className="flex gap-4 p-4 min-h-screen overflow-x-auto text-black"
+            className="flex gap-4 p-4 overflow-x-auto"
           >
             {boards.map((board, index) => (
               <Draggable key={board.id} draggableId={board.id} index={index}>
@@ -53,7 +53,6 @@ const BoardList: React.FC = () => {
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
-                    className="h-[200px]"
                   >
                     <Board id={board.id} name={board.name} index={index} />
                   </div>

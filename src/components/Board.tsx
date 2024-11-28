@@ -29,23 +29,30 @@ const Board: React.FC<BoardProps> = ({ id, name, index }) => {
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          className="p-4 bg-gray-200 rounded-md shadow-md m-2 w-[300px]"
+          className="p-4 bg-white rounded-lg shadow-lg m-2  min-w-[350px] flex flex-col justify-between border border-gray-300"
         >
-          <button
-            className="mt-4 text-red-500 hover:text-red-700"
-            onClick={() => confirmDelete(board.id)}
-          >
-            Delete Board
-          </button>
-          <h3 {...provided.dragHandleProps} className="text-lg font-bold mb-2">
-            {name}
-          </h3>
+          <div className="flex justify-between items-center  mb-4">
+            <h3
+              {...provided.dragHandleProps}
+              className="text-lg font-bold text-blue-600 truncate"
+              title={name}
+            >
+              {name}
+            </h3>
+            <button
+              className="text-red-500 hover:text-red-700"
+              onClick={() => confirmDelete(board!.id)}
+            >
+              Delete
+            </button>
+          </div>
+
           <Droppable droppableId={id} type="CARD">
             {(provided) => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="bg-gray-100 p-2 rounded-md"
+                className="flex flex-col gap-2 bg-gray-100 rounded-lg p-2 overflow-y-auto max-h-[300px] "
               >
                 {board?.cards.map((card, index) => (
                   <Draggable key={card.id} draggableId={card.id} index={index}>
@@ -68,7 +75,10 @@ const Board: React.FC<BoardProps> = ({ id, name, index }) => {
               </div>
             )}
           </Droppable>
-          <AddCard boardId={id} />
+
+          <div className="mt-4">
+            <AddCard boardId={id} />
+          </div>
         </div>
       )}
     </Draggable>
