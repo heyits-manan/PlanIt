@@ -1,8 +1,8 @@
 "use client";
-import BoardList from "@/components/Board";
+import BoardList from "@/components/BoardList";
 import React from "react";
 
-export default function Board() {
+export default function BoardMain() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-gray-50 to-gray-100">
       <main className="container mx-auto px-4 py-8">
