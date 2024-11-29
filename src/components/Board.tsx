@@ -1,88 +1,189 @@
-"use client";
-import React from "react";
-import { Draggable, Droppable } from "@hello-pangea/dnd";
-import { useBoardStore } from "../store/useBoardStore";
-import AddCard from "./AddCard";
-import Card from "./Card";
+import React, { useState } from "react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { PlusIcon, TrashIcon, XIcon } from "lucide-react";
+import { useBoardStore } from "@/store/useBoardStore";
 
-interface BoardProps {
-  id: string;
-  name: string;
-  index: number;
-}
+const BoardList = () => {
+  const {
+    boards,
+    addBoard,
+    deleteBoard,
+    addCard,
+    deleteCard,
+    reorderBoards,
+    moveCard,
+  } = useBoardStore();
 
-const Board: React.FC<BoardProps> = ({ id, name, index }) => {
-  const deleteCard = useBoardStore((state) => state.deleteCard);
-  const boards = useBoardStore((state) => state.boards);
-  const board = boards.find((b) => b.id === id);
-  const deleteBoard = useBoardStore((state) => state.deleteBoard);
+  const [newBoardName, setNewBoardName] = useState("");
+  const [newCardTexts, setNewCardTexts] = useState({});
 
-  const confirmDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this board?")) {
-      deleteBoard(id);
+  const onDragEnd = (result) => {
+    const { source, destination, type } = result;
+
+    if (type === "COLUMN") {
+      if (!destination) return;
+      reorderBoards(source.index, destination.index);
+      return;
     }
+
+    if (!destination) return;
+
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    )
+      return;
+
+    moveCard(
+      source.droppableId,
+      destination.droppableId,
+      source.index,
+      destination.index
+    );
+  };
+
+  const handleAddBoard = () => {
+    if (!newBoardName.trim()) return;
+    addBoard(newBoardName);
+    setNewBoardName("");
+  };
+
+  const handleAddCard = (boardId) => {
+    const cardText = newCardTexts[boardId] || "";
+    if (!cardText.trim()) return;
+
+    addCard(boardId, cardText);
+    setNewCardTexts((prev) => ({
+      ...prev,
+      [boardId]: "",
+    }));
   };
 
   return (
-    <Draggable draggableId={id} index={index}>
-      {(provided) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          className="p-4 bg-white rounded-lg shadow-lg m-2  min-w-[350px] flex flex-col justify-between border border-gray-300"
+    <div className="p-4">
+      <div className="flex mb-4">
+        <input
+          type="text"
+          value={newBoardName}
+          onChange={(e) => setNewBoardName(e.target.value)}
+          placeholder="New board name"
+          className="border p-2 mr-2 flex-grow"
+          onKeyDown={(e) => e.key === "Enter" && handleAddBoard()}
+        />
+        <button
+          onClick={handleAddBoard}
+          className="bg-blue-500 text-white p-2 rounded"
         >
-          <div className="flex justify-between items-center  mb-4">
-            <h3
-              {...provided.dragHandleProps}
-              className="text-lg font-bold text-blue-600 truncate"
-              title={name}
-            >
-              {name}
-            </h3>
-            <button
-              className="text-red-500 hover:text-red-700"
-              onClick={() => confirmDelete(board!.id)}
-            >
-              Delete
-            </button>
-          </div>
+          Add Board
+        </button>
+      </div>
 
-          <Droppable droppableId={id} type="CARD">
-            {(provided) => (
-              <div
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className="flex flex-col gap-2 bg-gray-100 rounded-lg p-2 overflow-y-auto max-h-[300px] "
-              >
-                {board?.cards.map((card, index) => (
-                  <Draggable key={card.id} draggableId={card.id} index={index}>
-                    {(provided) => (
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="board" type="COLUMN" direction="horizontal">
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="flex space-x-4 overflow-x-auto"
+            >
+              {boards.map((board, index) => (
+                <Draggable key={board.id} draggableId={board.id} index={index}>
+                  {(provided) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      className="w-64 bg-gray-100 rounded-lg p-4 relative"
+                    >
                       <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
                         {...provided.dragHandleProps}
+                        className="flex justify-between items-center mb-4"
                       >
-                        <Card
-                          id={card.id}
-                          title={card.title}
-                          onDelete={(cardId) => deleteCard(id, cardId)}
-                        />
+                        <div className="text-lg font-bold">{board.name}</div>
+                        <button
+                          onClick={() => deleteBoard(board.id)}
+                          className="text-red-500 hover:bg-red-100 p-1 rounded"
+                        >
+                          <TrashIcon size={16} />
+                        </button>
                       </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
 
-          <div className="mt-4">
-            <AddCard boardId={id} />
-          </div>
-        </div>
-      )}
-    </Draggable>
+                      {/* New Card Input */}
+                      <div className="flex mb-4">
+                        <input
+                          type="text"
+                          value={newCardTexts[board.id] || ""}
+                          onChange={(e) =>
+                            setNewCardTexts((prev) => ({
+                              ...prev,
+                              [board.id]: e.target.value,
+                            }))
+                          }
+                          placeholder="New card"
+                          className="border p-2 mr-2 flex-grow"
+                          onKeyDown={(e) =>
+                            e.key === "Enter" && handleAddCard(board.id)
+                          }
+                        />
+                        <button
+                          onClick={() => handleAddCard(board.id)}
+                          className="bg-green-500 text-white p-2 rounded"
+                        >
+                          <PlusIcon size={16} />
+                        </button>
+                      </div>
+
+                      <Droppable droppableId={board.id}>
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                            className="min-h-[300px]"
+                          >
+                            {board.cards.map((card, index) => (
+                              <Draggable
+                                key={card.id}
+                                draggableId={card.id}
+                                index={index}
+                              >
+                                {(provided) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    className="bg-white p-4 mb-2 rounded shadow flex justify-between items-center group"
+                                  >
+                                    <div
+                                      {...provided.dragHandleProps}
+                                      className="flex-grow"
+                                    >
+                                      {card.title}
+                                    </div>
+                                    <button
+                                      onClick={() =>
+                                        deleteCard(board.id, card.id)
+                                      }
+                                      className="text-red-500 hover:bg-red-100 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      <XIcon size={16} />
+                                    </button>
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+    </div>
   );
 };
 
-export default Board;
+export default BoardList;
