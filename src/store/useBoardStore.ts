@@ -11,14 +11,13 @@ interface Board {
   cards: Card[];
 }
 
-interface BoardState {
+interface BoardStore {
   boards: Board[];
   addBoard: (name: string) => void;
   deleteBoard: (id: string) => void;
-  reorderBoards: (startIndex: number, endIndex: number) => void;
   addCard: (boardId: string, title: string) => void;
   deleteCard: (boardId: string, cardId: string) => void;
-
+  reorderBoards: (sourceIndex: number, destinationIndex: number) => void;
   moveCard: (
     sourceBoardId: string,
     destinationBoardId: string,
@@ -27,34 +26,55 @@ interface BoardState {
   ) => void;
 }
 
-export const useBoardStore = create<BoardState>((set) => ({
-  boards: [],
+const generateId = () => Math.random().toString(36).substr(2, 9);
+
+export const useBoardStore = create<BoardStore>((set) => ({
+  boards: [
+    {
+      id: generateId(),
+      name: "To Do",
+      cards: [
+        { id: generateId(), title: "Task 1" },
+        { id: generateId(), title: "Task 2" },
+      ],
+    },
+    {
+      id: generateId(),
+      name: "In Progress",
+      cards: [
+        { id: generateId(), title: "Task 3" },
+        { id: generateId(), title: "Task 4" },
+      ],
+    },
+    {
+      id: generateId(),
+      name: "Done",
+      cards: [{ id: generateId(), title: "Task 5" }],
+    },
+  ],
+
   addBoard: (name) =>
     set((state) => ({
-      boards: [...state.boards, { id: Date.now().toString(), name, cards: [] }],
+      boards: [...state.boards, { id: generateId(), name, cards: [] }],
     })),
+
   deleteBoard: (id) =>
     set((state) => ({
       boards: state.boards.filter((board) => board.id !== id),
     })),
-  reorderBoards: (startIndex, endIndex) =>
-    set((state) => {
-      const boards = Array.from(state.boards);
-      const [removed] = boards.splice(startIndex, 1);
-      boards.splice(endIndex, 0, removed);
-      return { boards };
-    }),
+
   addCard: (boardId, title) =>
     set((state) => ({
       boards: state.boards.map((board) =>
         board.id === boardId
           ? {
               ...board,
-              cards: [...board.cards, { id: Date.now().toString(), title }],
+              cards: [...board.cards, { id: generateId(), title }],
             }
           : board
       ),
     })),
+
   deleteCard: (boardId, cardId) =>
     set((state) => ({
       boards: state.boards.map((board) =>
@@ -66,6 +86,15 @@ export const useBoardStore = create<BoardState>((set) => ({
           : board
       ),
     })),
+
+  reorderBoards: (sourceIndex, destinationIndex) =>
+    set((state) => {
+      const boards = Array.from(state.boards);
+      const [moved] = boards.splice(sourceIndex, 1);
+      boards.splice(destinationIndex, 0, moved);
+      return { boards };
+    }),
+
   moveCard: (
     sourceBoardId,
     destinationBoardId,
@@ -82,33 +111,11 @@ export const useBoardStore = create<BoardState>((set) => ({
 
       if (!sourceBoard || !destinationBoard) return state;
 
-      const sourceCards = Array.from(sourceBoard.cards);
-
-      if (sourceBoardId === destinationBoardId) {
-        const [movedCard] = sourceCards.splice(sourceIndex, 1);
-        sourceCards.splice(destinationIndex, 0, movedCard);
-
-        return {
-          boards: state.boards.map((board) =>
-            board.id === sourceBoardId
-              ? { ...board, cards: sourceCards }
-              : board
-          ),
-        };
-      }
-
-      const [movedCard] = sourceCards.splice(sourceIndex, 1);
-      const destinationCards = Array.from(destinationBoard.cards);
-      destinationCards.splice(destinationIndex, 0, movedCard);
+      const [movedCard] = sourceBoard.cards.splice(sourceIndex, 1);
+      destinationBoard.cards.splice(destinationIndex, 0, movedCard);
 
       return {
-        boards: state.boards.map((board) => {
-          if (board.id === sourceBoardId)
-            return { ...board, cards: sourceCards };
-          if (board.id === destinationBoardId)
-            return { ...board, cards: destinationCards };
-          return board;
-        }),
+        boards: [...state.boards],
       };
     }),
 }));
