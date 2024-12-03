@@ -25,15 +25,18 @@ const BoardList: React.FC = () => {
   };
 
   return (
-    <div className="p-4">
-      <NewBoardInput />
+    <div>
+      <div className="mb-6 flex justify-between items-center">
+        <h3 className="text-2xl font-semibold text-gray-800">Your Boards</h3>
+        <NewBoardInput />
+      </div>
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="boards" type="COLUMN" direction="horizontal">
           {(provided) => (
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className="flex space-x-4 overflow-x-auto"
+              className="flex space-x-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100"
             >
               {boards.map((board, index) => (
                 <Board key={board.id} board={board} index={index} />

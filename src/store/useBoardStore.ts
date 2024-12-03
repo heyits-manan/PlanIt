@@ -17,6 +17,7 @@ interface BoardStore {
   deleteBoard: (id: string) => void;
   addCard: (boardId: string, title: string) => void;
   deleteCard: (boardId: string, cardId: string) => void;
+  editCard: (boardId: string, cardId: string, newTitle: string) => void;
   reorderBoards: (sourceIndex: number, destinationIndex: number) => void;
   moveCard: (
     sourceBoardId: string,
@@ -82,6 +83,20 @@ export const useBoardStore = create<BoardStore>((set) => ({
           ? {
               ...board,
               cards: board.cards.filter((card) => card.id !== cardId),
+            }
+          : board
+      ),
+    })),
+
+  editCard: (boardId, cardId, newTitle) =>
+    set((state) => ({
+      boards: state.boards.map((board) =>
+        board.id === boardId
+          ? {
+              ...board,
+              cards: board.cards.map((card) =>
+                card.id === cardId ? { ...card, title: newTitle } : card
+              ),
             }
           : board
       ),

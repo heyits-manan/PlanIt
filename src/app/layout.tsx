@@ -17,6 +17,15 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "PlanIt - Organize Your Projects",
   description: "A modern task management tool",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: { url: "/apple-touch-icon.png" },
+    shortcut: { url: "/favicon.ico" },
+  },
 };
 
 export default function RootLayout({
@@ -31,10 +40,12 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white`}
         >
           {children}
+          <footer className="w-full py-4 bg-blue-600 text-white text-center">
+            <p>
+              &copy; {new Date().getFullYear()} PlanIt. All rights reserved.
+            </p>
+          </footer>
         </body>
-        <footer className="w-full py-4 bg-blue-600 text-white text-center">
-          <p>&copy; {new Date().getFullYear()} PlanIt. All rights reserved.</p>
-        </footer>
       </html>
     </ClerkProvider>
   );
