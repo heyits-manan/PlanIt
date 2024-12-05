@@ -4,10 +4,8 @@ import { useUser, UserButton } from "@clerk/nextjs";
 import {
   ArrowRightIcon,
   CheckCircle2Icon,
-  PlusCircleIcon,
   LayoutDashboardIcon,
   UsersIcon,
-  StarIcon,
 } from "lucide-react";
 
 export default function Home() {

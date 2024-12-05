@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { UserButton, SignInButton, useUser } from "@clerk/nextjs";
-import { Home, Plus, LogIn, LayoutDashboardIcon } from "lucide-react";
+import { LogIn, LayoutDashboardIcon } from "lucide-react";
 
 const Navbar: React.FC = () => {
   const { isSignedIn } = useUser();

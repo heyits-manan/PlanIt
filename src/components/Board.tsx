@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 import NewCardInput from "@/components/NewCardInput";
 import Card from "@/components/Card";

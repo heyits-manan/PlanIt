@@ -195,29 +195,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         destIndex
       ) =>
         set((state) => {
-          let movedCard: { id: string; title: string } | null = null;
-
-          const updatedWorkspaces = state.workspaces.map((w) => {
-            // Source workspace
-            if (w.id === sourceWorkspaceId) {
-              const sourceBoard = w.boards.find((b) => b.id === sourceBoardId);
-              if (!sourceBoard) return w;
-
-              // Remove the card from the source board
-              [movedCard] = sourceBoard.cards.splice(sourceIndex, 1);
-
-              return {
-                ...w,
-                boards: w.boards.map((b) =>
-                  b.id === sourceBoardId
-                    ? { ...b, cards: sourceBoard.cards }
-                    : b
-                ),
-              };
-            }
-
-            return w;
-          });
+          const movedCard: { id: string; title: string } | null = null;
 
           if (movedCard) {
             const updatedWorkspaces = state.workspaces.map((w) => {
