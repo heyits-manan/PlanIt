@@ -1,16 +1,20 @@
 import React, { useState } from "react";
 import { PlusIcon } from "lucide-react";
-import { useBoardStore } from "@/store/useBoardStore";
+import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 
-const NewBoardInput: React.FC = () => {
+interface NewBoardInputProps {
+  workspaceId: string;
+}
+
+const NewBoardInput: React.FC<NewBoardInputProps> = ({ workspaceId }) => {
   const [boardName, setBoardName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
-  const { addBoard } = useBoardStore();
+  const { addBoard } = useWorkspaceStore();
 
   const handleAddBoard = () => {
     const trimmedName = boardName.trim();
     if (trimmedName) {
-      addBoard(trimmedName);
+      addBoard(trimmedName, workspaceId);
       setBoardName("");
       setIsAdding(false);
     }

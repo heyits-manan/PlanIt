@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
-import NewCardInput from "@/components/NewCardInput"; // Correct import
+import NewCardInput from "@/components/NewCardInput";
 import Card from "@/components/Card";
 import { TrashIcon } from "lucide-react";
-import { useBoardStore } from "@/store/useBoardStore";
+import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 
 interface BoardProps {
   board: {
@@ -12,10 +12,15 @@ interface BoardProps {
     cards: { id: string; title: string }[];
   };
   index: number;
+  workspaceId: string;
 }
 
-const Board: React.FC<BoardProps> = ({ board, index }) => {
-  const { deleteBoard } = useBoardStore();
+const Board: React.FC<BoardProps> = ({ board, index, workspaceId }) => {
+  const { deleteBoard } = useWorkspaceStore();
+
+  const handleDeleteBoard = () => {
+    deleteBoard(workspaceId, board.id);
+  };
 
   return (
     <Draggable draggableId={board.id} index={index}>
@@ -31,16 +36,14 @@ const Board: React.FC<BoardProps> = ({ board, index }) => {
           >
             <div className="text-lg font-bold">{board.name}</div>
             <button
-              onClick={() => deleteBoard(board.id)}
+              onClick={handleDeleteBoard}
               className="text-red-500 hover:bg-red-100 p-1 rounded"
             >
               <TrashIcon size={16} />
             </button>
           </div>
-
-          {/* Fixed reference to NewCardInput */}
-          <NewCardInput boardId={board.id} />
-
+          <NewCardInput workspaceId={workspaceId} boardId={board.id} />{" "}
+          {/* Update this line */}
           <Droppable droppableId={board.id}>
             {(provided) => (
               <div
@@ -48,11 +51,12 @@ const Board: React.FC<BoardProps> = ({ board, index }) => {
                 {...provided.droppableProps}
                 className="min-h-[300px]"
               >
-                {board.cards.map((card, index) => (
+                {board.cards.map((card, cardIndex) => (
                   <Card
                     key={card.id}
                     card={card}
-                    index={index}
+                    index={cardIndex}
+                    workspaceId={workspaceId}
                     boardId={board.id}
                   />
                 ))}

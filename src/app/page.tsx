@@ -23,18 +23,6 @@ export default function Home() {
           </Link>
 
           <nav className="flex items-center space-x-6">
-            <Link
-              href="/features"
-              className="flex items-center text-gray-700 hover:text-blue-600 
-              transition-colors group"
-            >
-              <StarIcon
-                className="mr-2 text-gray-500 group-hover:text-blue-600"
-                size={18}
-              />
-              Features
-            </Link>
-
             {isSignedIn && (
               <Link
                 href="/boards"
@@ -53,17 +41,6 @@ export default function Home() {
           <div className="flex items-center space-x-4">
             {isSignedIn ? (
               <div className="flex items-center space-x-4">
-                <Link
-                  href="/boards"
-                  className="flex items-center bg-blue-50 text-blue-700 
-                  px-3 py-2 rounded-full hover:bg-blue-100 transition-all group"
-                >
-                  <PlusCircleIcon
-                    className="mr-2 text-blue-500 group-hover:text-blue-700"
-                    size={18}
-                  />
-                  New Board
-                </Link>
                 <UserButton
                   appearance={{
                     elements: {
@@ -96,18 +73,18 @@ export default function Home() {
 
       <main className="container mx-auto px-4 pt-24 pb-12 flex flex-col items-center justify-center text-center">
         <div className="max-w-4xl">
-          <h2 className="text-5xl font-extrabold mb-6 leading-tight text-center justify-center">
+          <h2 className="text-5xl font-extrabold mb-6 leading-tight text-center justify-center animate-fade-in">
             Organize Your Work,{" "}
             <span className="text-blue-600">Effortlessly</span>
           </h2>
-          <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed animate-fade-in">
             PlanIt transforms how you manage tasks and collaborate. Create,
             track, and achieve more with our intuitive, powerful board
             management system.
           </p>
 
           {!isSignedIn && (
-            <div className="flex justify-center space-x-4">
+            <div className="flex justify-center space-x-4 animate-fade-in">
               <Link
                 href="/sign-up"
                 className="px-6 py-3 bg-blue-500 text-white rounded-full text-lg font-medium 

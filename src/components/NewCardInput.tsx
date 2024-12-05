@@ -1,18 +1,22 @@
 import React, { useState } from "react";
 import { PlusIcon } from "lucide-react";
-import { useBoardStore } from "@/store/useBoardStore";
+import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 
 interface NewCardInputProps {
+  workspaceId: string; // Add this line
   boardId: string;
 }
 
-const NewCardInput: React.FC<NewCardInputProps> = ({ boardId }) => {
+const NewCardInput: React.FC<NewCardInputProps> = ({
+  workspaceId,
+  boardId,
+}) => {
   const [cardText, setCardText] = useState("");
-  const { addCard } = useBoardStore();
+  const { addCard } = useWorkspaceStore();
 
   const handleAddCard = () => {
     if (!cardText.trim()) return;
-    addCard(boardId, cardText);
+    addCard(workspaceId, boardId, cardText); // Update this line
     setCardText("");
   };
 

@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import { Draggable } from "@hello-pangea/dnd";
 import { XIcon, EditIcon, CheckIcon } from "lucide-react";
-import { useBoardStore } from "@/store/useBoardStore";
+import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 
 interface CardProps {
   card: { id: string; title: string };
   index: number;
   boardId: string;
+  workspaceId: string; // Add this line
 }
 
-const Card: React.FC<CardProps> = ({ card, index, boardId }) => {
-  const { deleteCard, editCard } = useBoardStore();
+const Card: React.FC<CardProps> = ({ card, index, boardId, workspaceId }) => {
+  const { deleteCard, editCard } = useWorkspaceStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(card.title);
 
@@ -18,7 +19,7 @@ const Card: React.FC<CardProps> = ({ card, index, boardId }) => {
     if (isEditing) {
       const trimmedTitle = editedTitle.trim();
       if (trimmedTitle) {
-        editCard(boardId, card.id, trimmedTitle);
+        editCard(workspaceId, boardId, card.id, trimmedTitle); // Update this line
         setIsEditing(false);
       }
     } else {
@@ -85,7 +86,7 @@ const Card: React.FC<CardProps> = ({ card, index, boardId }) => {
                   <EditIcon size={16} />
                 </button>
                 <button
-                  onClick={() => deleteCard(boardId, card.id)}
+                  onClick={() => deleteCard(workspaceId, boardId, card.id)} // Update this line
                   className="text-red-500 hover:bg-red-100 p-1 rounded opacity-0 group-hover:opacity-100 transition-all"
                   title="Delete"
                 >
