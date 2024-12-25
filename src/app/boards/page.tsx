@@ -1,27 +1,36 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 import WorkspaceModal from "@/components/WorkspaceModal";
 import BoardList from "@/components/BoardList";
-import { PlusIcon, HomeIcon } from "lucide-react";
-import { Spinner } from "@/components/Spinner"; // Assume you have a Spinner component
+import { Spinner } from "@/components/Spinner";
 
 export default function WorkspacesMain() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { workspaces } = useWorkspaceStore();
+  const { workspaces, fetchWorkspaces } = useWorkspaceStore();
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(
-    workspaces.length > 0 ? workspaces[0].id : null
+    null
   );
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    fetchWorkspaces();
+  }, [fetchWorkspaces]);
+
+  useEffect(() => {
+    if (workspaces.length > 0 && !selectedWorkspaceId) {
+      setSelectedWorkspaceId(workspaces[0]._id);
+    }
+  }, [workspaces, selectedWorkspaceId]);
+
   const selectedWorkspace = workspaces.find(
-    (workspace) => workspace.id === selectedWorkspaceId
+    (workspace) => workspace._id === selectedWorkspaceId
   );
 
   const handleWorkspaceChange = (workspaceId: string) => {
     setIsLoading(true);
     setSelectedWorkspaceId(workspaceId);
-    setTimeout(() => setIsLoading(false), 500); // Simulate loading time
+    setTimeout(() => setIsLoading(false), 500);
   };
 
   return (
@@ -43,7 +52,7 @@ export default function WorkspacesMain() {
                 className="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors"
                 title="Create New Workspace"
               >
-                <PlusIcon size={24} />
+                Create New Workspace
               </button>
             </div>
           </div>
@@ -53,15 +62,15 @@ export default function WorkspacesMain() {
             <div className="flex space-x-2 overflow-x-auto">
               {workspaces.map((workspace) => (
                 <button
-                  key={workspace.id}
-                  onClick={() => handleWorkspaceChange(workspace.id)}
-                  className={`flex items-center px-4 py-2 rounded-lg transition-all ${
-                    selectedWorkspaceId === workspace.id
+                  key={workspace._id}
+                  onClick={() => handleWorkspaceChange(workspace._id)}
+                  className={`p-2 rounded-full transition-colors ${
+                    selectedWorkspaceId === workspace._id
                       ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      : "bg-white text-black"
                   }`}
+                  title={workspace.name}
                 >
-                  <HomeIcon size={16} className="mr-2" />
                   {workspace.name}
                 </button>
               ))}
@@ -75,7 +84,7 @@ export default function WorkspacesMain() {
                 <Spinner />
               </div>
             ) : selectedWorkspace ? (
-              <BoardList workspaceId={selectedWorkspace.id} />
+              <BoardList workspaceId={selectedWorkspace._id} />
             ) : (
               <p className="text-gray-500 text-center">
                 No workspaces found. Create a workspace to get started.
@@ -84,7 +93,6 @@ export default function WorkspacesMain() {
           </div>
         </div>
       </main>
-
       {isModalOpen && <WorkspaceModal onClose={() => setIsModalOpen(false)} />}
     </div>
   );

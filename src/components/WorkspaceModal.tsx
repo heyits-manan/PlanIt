@@ -1,5 +1,7 @@
+"use client";
 import React, { useState } from "react";
 import { useWorkspaceStore } from "@/store/useWorkspaceStore";
+import { useUser } from "@clerk/nextjs"; // Import Clerk's useUser hook
 
 interface WorkspaceModalProps {
   onClose: () => void;
@@ -8,12 +10,44 @@ interface WorkspaceModalProps {
 const WorkspaceModal: React.FC<WorkspaceModalProps> = ({ onClose }) => {
   const [workspaceName, setWorkspaceName] = useState("");
   const { createWorkspace } = useWorkspaceStore();
+  const { user } = useUser(); // Get the current user
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (workspaceName.trim()) {
-      createWorkspace(workspaceName.trim());
-      onClose();
+    if (workspaceName.trim() && user?.id) {
+      const ownerId = user.id;
+
+      const payload = {
+        name: workspaceName.trim(),
+        owner: ownerId, // Use Clerk's user ID
+      };
+
+      console.log("Request payload:", payload);
+
+      try {
+        const response = await fetch("/api/workspaces", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Error response from server:", errorData);
+          throw new Error(errorData.message || "Failed to create workspace");
+        }
+
+        const data = await response.json();
+        console.log("Workspace created successfully:", data);
+        createWorkspace(data.workspace);
+        onClose();
+      } catch (error) {
+        console.error("Error creating workspace:", error);
+      }
+    } else {
+      console.error("Invalid workspace name or user ID");
     }
   };
 

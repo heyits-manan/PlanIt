@@ -2,24 +2,24 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 function generateUniqueId(): string {
-  return `id_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
-
-interface Board {
-  id: string;
-  name: string;
-  cards: { id: string; title: string }[];
+  return `id_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 }
 
 interface Workspace {
-  id: string;
+  _id: string;
   name: string;
-  boards: Board[];
+  description: string;
+  owner: string;
+  members: string[];
+  boards: any[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface WorkspaceStore {
   workspaces: Workspace[];
   createWorkspace: (name: string) => void;
+  fetchWorkspaces: () => void;
   deleteWorkspace: (workspaceId: string) => void;
   renameWorkspace: (workspaceId: string, newName: string) => void;
   createBoard: (workspaceId: string, boardName: string) => void;
@@ -53,35 +53,43 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
   persist(
     (set) => ({
       workspaces: [],
-
-      createWorkspace: (name) =>
+      fetchWorkspaces: async () => {
+        const response = await fetch("/api/workspaces");
+        const data = await response.json();
+        set({ workspaces: data.workspaces });
+      },
+      createWorkspace: (name) => {
+        const newWorkspace: Workspace = {
+          _id: generateUniqueId(),
+          name,
+          description: "",
+          owner: "",
+          members: [],
+          boards: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
         set((state) => ({
-          workspaces: [
-            ...state.workspaces,
-            {
-              id: generateUniqueId(),
-              name,
-              boards: [],
-            },
-          ],
-        })),
+          workspaces: [...state.workspaces, newWorkspace],
+        }));
+      },
 
       deleteWorkspace: (workspaceId) =>
         set((state) => ({
-          workspaces: state.workspaces.filter((w) => w.id !== workspaceId),
+          workspaces: state.workspaces.filter((w) => w._id !== workspaceId),
         })),
 
       renameWorkspace: (workspaceId, newName) =>
         set((state) => ({
           workspaces: state.workspaces.map((w) =>
-            w.id === workspaceId ? { ...w, name: newName } : w
+            w._id === workspaceId ? { ...w, name: newName } : w
           ),
         })),
 
       createBoard: (workspaceId, boardName) =>
         set((state) => ({
           workspaces: state.workspaces.map((w) =>
-            w.id === workspaceId
+            w._id === workspaceId
               ? {
                   ...w,
                   boards: [
@@ -100,7 +108,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       deleteBoard: (workspaceId, boardId) =>
         set((state) => ({
           workspaces: state.workspaces.map((w) =>
-            w.id === workspaceId
+            w._id === workspaceId
               ? {
                   ...w,
                   boards: w.boards.filter((b) => b.id !== boardId),
@@ -112,7 +120,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       reorderBoards: (workspaceId, sourceIndex, destIndex) =>
         set((state) => ({
           workspaces: state.workspaces.map((w) =>
-            w.id === workspaceId
+            w._id === workspaceId
               ? {
                   ...w,
                   boards: moveInArray(w.boards, sourceIndex, destIndex),
@@ -124,7 +132,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       createCard: (workspaceId, boardId, cardTitle) =>
         set((state) => ({
           workspaces: state.workspaces.map((w) =>
-            w.id === workspaceId
+            w._id === workspaceId
               ? {
                   ...w,
                   boards: w.boards.map((b) =>
@@ -149,14 +157,16 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       deleteCard: (workspaceId, boardId, cardId) =>
         set((state) => ({
           workspaces: state.workspaces.map((w) =>
-            w.id === workspaceId
+            w._id === workspaceId
               ? {
                   ...w,
                   boards: w.boards.map((b) =>
                     b.id === boardId
                       ? {
                           ...b,
-                          cards: b.cards.filter((c) => c.id !== cardId),
+                          cards: b.cards.filter(
+                            (c: { id: string }) => c.id !== cardId
+                          ),
                         }
                       : b
                   ),
@@ -168,15 +178,16 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       editCard: (workspaceId, boardId, cardId, newTitle) =>
         set((state) => ({
           workspaces: state.workspaces.map((w) =>
-            w.id === workspaceId
+            w._id === workspaceId
               ? {
                   ...w,
                   boards: w.boards.map((b) =>
                     b.id === boardId
                       ? {
                           ...b,
-                          cards: b.cards.map((c) =>
-                            c.id === cardId ? { ...c, title: newTitle } : c
+                          cards: b.cards.map(
+                            (c: { id: string; title: string }) =>
+                              c.id === cardId ? { ...c, title: newTitle } : c
                           ),
                         }
                       : b
@@ -200,7 +211,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           if (movedCard) {
             const updatedWorkspaces = state.workspaces.map((w) => {
               // Destination workspace
-              if (w.id === destWorkspaceId) {
+              if (w._id === destWorkspaceId) {
                 return {
                   ...w,
                   boards: w.boards.map((b) =>
@@ -230,7 +241,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       addCard: (workspaceId, boardId, cardTitle) =>
         set((state) => ({
           workspaces: state.workspaces.map((w) =>
-            w.id === workspaceId
+            w._id === workspaceId
               ? {
                   ...w,
                   boards: w.boards.map((b) =>
@@ -255,7 +266,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       addBoard: (boardName, workspaceId) =>
         set((state) => ({
           workspaces: state.workspaces.map((w) =>
-            w.id === workspaceId
+            w._id === workspaceId
               ? {
                   ...w,
                   boards: [

@@ -7,7 +7,7 @@ interface CardProps {
   card: { id: string; title: string };
   index: number;
   boardId: string;
-  workspaceId: string; // Add this line
+  workspaceId: string;
 }
 
 const Card: React.FC<CardProps> = ({ card, index, boardId, workspaceId }) => {
