@@ -18,7 +18,7 @@ interface Workspace {
 
 interface WorkspaceStore {
   workspaces: Workspace[];
-  createWorkspace: (name: string) => void;
+  createWorkspace: (workspace: Workspace) => void;
   fetchWorkspaces: () => void;
   deleteWorkspace: (workspaceId: string) => void;
   renameWorkspace: (workspaceId: string, newName: string) => void;
@@ -58,19 +58,9 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         const data = await response.json();
         set({ workspaces: data.workspaces });
       },
-      createWorkspace: (name) => {
-        const newWorkspace: Workspace = {
-          _id: generateUniqueId(),
-          name,
-          description: "",
-          owner: "",
-          members: [],
-          boards: [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
+      createWorkspace: (workspace: Workspace) => {
         set((state) => ({
-          workspaces: [...state.workspaces, newWorkspace],
+          workspaces: [...state.workspaces, workspace],
         }));
       },
 
