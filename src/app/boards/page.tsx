@@ -71,20 +71,24 @@ export default function WorkspacesMain() {
           {/* Workspace Selection */}
           <div className="p-4 bg-gray-50 border-b">
             <div className="flex space-x-2 overflow-x-auto">
-              {workspaces.map((workspace) => (
-                <button
-                  key={workspace._id}
-                  onClick={() => handleWorkspaceChange(workspace._id)}
-                  className={`p-2 rounded-full transition-colors ${
-                    selectedWorkspaceId === workspace._id
-                      ? "bg-blue-500 text-white"
-                      : "bg-white text-black"
-                  }`}
-                  title={workspace.name}
-                >
-                  {workspace.name}
-                </button>
-              ))}
+              {workspaces && workspaces.length > 0 ? (
+                workspaces.map((workspace) => (
+                  <button
+                    key={workspace._id}
+                    onClick={() => handleWorkspaceChange(workspace._id)}
+                    className={`p-2 rounded-full transition-colors ${
+                      selectedWorkspaceId === workspace._id
+                        ? "bg-blue-500 text-white"
+                        : "bg-white text-black"
+                    }`}
+                    title={workspace.name}
+                  >
+                    {workspace.name}
+                  </button>
+                ))
+              ) : (
+                <p className="text-gray-500">No workspaces available</p>
+              )}
             </div>
           </div>
 
