@@ -10,7 +10,7 @@ interface BoardListProps {
 
 const BoardList: React.FC<BoardListProps> = ({ workspaceId }) => {
   const { workspaces, moveCard, reorderBoards } = useWorkspaceStore();
-  const currentWorkspace = workspaces.find((w) => w.id === workspaceId);
+  const currentWorkspace = workspaces.find((w) => w._id === workspaceId);
   const boards = currentWorkspace?.boards || [];
 
   const onDragEnd = (result: DropResult) => {

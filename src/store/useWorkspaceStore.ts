@@ -5,21 +5,33 @@ function generateUniqueId(): string {
   return `id_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 }
 
+interface Card {
+  id: string;
+  title: string;
+}
+
+interface Board {
+  id: string;
+  name: string;
+  cards: Card[];
+  position: number;
+}
+
 interface Workspace {
   _id: string;
   name: string;
   description: string;
   owner: string;
   members: string[];
-  boards: any[];
+  boards: Board[];
   createdAt: string;
   updatedAt: string;
 }
 
 interface WorkspaceStore {
   workspaces: Workspace[];
+  fetchWorkspaces: () => Promise<void>;
   createWorkspace: (workspace: Workspace) => void;
-  fetchWorkspaces: () => void;
   deleteWorkspace: (workspaceId: string) => void;
   renameWorkspace: (workspaceId: string, newName: string) => void;
   createBoard: (workspaceId: string, boardName: string) => void;
@@ -29,14 +41,6 @@ interface WorkspaceStore {
     sourceIndex: number,
     destIndex: number
   ) => void;
-  createCard: (workspaceId: string, boardId: string, cardTitle: string) => void;
-  deleteCard: (workspaceId: string, boardId: string, cardId: string) => void;
-  editCard: (
-    workspaceId: string,
-    boardId: string,
-    cardId: string,
-    newTitle: string
-  ) => void;
   moveCard: (
     sourceWorkspaceId: string,
     destWorkspaceId: string,
@@ -45,8 +49,15 @@ interface WorkspaceStore {
     sourceIndex: number,
     destIndex: number
   ) => void;
+  deleteCard: (workspaceId: string, boardId: string, cardId: string) => void;
+  editCard: (
+    workspaceId: string,
+    boardId: string,
+    cardId: string,
+    newTitle: string
+  ) => void;
+  addBoard: (workspaceId: string, boardName: string) => void;
   addCard: (workspaceId: string, boardId: string, cardTitle: string) => void;
-  addBoard: (boardName: string, workspaceId: string) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>()(
@@ -63,226 +74,200 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           workspaces: [...state.workspaces, workspace],
         }));
       },
-
-      deleteWorkspace: (workspaceId) =>
+      deleteWorkspace: (workspaceId: string) =>
         set((state) => ({
-          workspaces: state.workspaces.filter((w) => w._id !== workspaceId),
-        })),
-
-      renameWorkspace: (workspaceId, newName) =>
-        set((state) => ({
-          workspaces: state.workspaces.map((w) =>
-            w._id === workspaceId ? { ...w, name: newName } : w
+          workspaces: state.workspaces.filter(
+            (workspace) => workspace._id !== workspaceId
           ),
         })),
-
-      createBoard: (workspaceId, boardName) =>
+      renameWorkspace: (workspaceId: string, newName: string) =>
         set((state) => ({
-          workspaces: state.workspaces.map((w) =>
-            w._id === workspaceId
+          workspaces: state.workspaces.map((workspace) =>
+            workspace._id === workspaceId
+              ? { ...workspace, name: newName }
+              : workspace
+          ),
+        })),
+      createBoard: (workspaceId: string, boardName: string) =>
+        set((state) => ({
+          workspaces: state.workspaces.map((workspace) =>
+            workspace._id === workspaceId
               ? {
-                  ...w,
+                  ...workspace,
                   boards: [
-                    ...w.boards,
+                    ...workspace.boards,
                     {
                       id: generateUniqueId(),
                       name: boardName,
                       cards: [],
+                      position: workspace.boards.length,
                     },
                   ],
                 }
-              : w
+              : workspace
           ),
         })),
-
-      deleteBoard: (workspaceId, boardId) =>
+      deleteBoard: (workspaceId: string, boardId: string) =>
         set((state) => ({
-          workspaces: state.workspaces.map((w) =>
-            w._id === workspaceId
+          workspaces: state.workspaces.map((workspace) =>
+            workspace._id === workspaceId
               ? {
-                  ...w,
-                  boards: w.boards.filter((b) => b.id !== boardId),
-                }
-              : w
-          ),
-        })),
-
-      reorderBoards: (workspaceId, sourceIndex, destIndex) =>
-        set((state) => ({
-          workspaces: state.workspaces.map((w) =>
-            w._id === workspaceId
-              ? {
-                  ...w,
-                  boards: moveInArray(w.boards, sourceIndex, destIndex),
-                }
-              : w
-          ),
-        })),
-
-      createCard: (workspaceId, boardId, cardTitle) =>
-        set((state) => ({
-          workspaces: state.workspaces.map((w) =>
-            w._id === workspaceId
-              ? {
-                  ...w,
-                  boards: w.boards.map((b) =>
-                    b.id === boardId
-                      ? {
-                          ...b,
-                          cards: [
-                            ...b.cards,
-                            {
-                              id: generateUniqueId(),
-                              title: cardTitle,
-                            },
-                          ],
-                        }
-                      : b
+                  ...workspace,
+                  boards: workspace.boards.filter(
+                    (board) => board.id !== boardId
                   ),
                 }
-              : w
+              : workspace
           ),
         })),
-
-      deleteCard: (workspaceId, boardId, cardId) =>
+      reorderBoards: (
+        workspaceId: string,
+        sourceIndex: number,
+        destIndex: number
+      ) =>
         set((state) => ({
-          workspaces: state.workspaces.map((w) =>
-            w._id === workspaceId
-              ? {
-                  ...w,
-                  boards: w.boards.map((b) =>
-                    b.id === boardId
-                      ? {
-                          ...b,
-                          cards: b.cards.filter(
-                            (c: { id: string }) => c.id !== cardId
-                          ),
-                        }
-                      : b
-                  ),
-                }
-              : w
-          ),
+          workspaces: state.workspaces.map((workspace) => {
+            if (workspace._id === workspaceId) {
+              const boards = Array.from(workspace.boards);
+              const [movedBoard] = boards.splice(sourceIndex, 1);
+              boards.splice(destIndex, 0, movedBoard);
+              return { ...workspace, boards };
+            }
+            return workspace;
+          }),
         })),
-
-      editCard: (workspaceId, boardId, cardId, newTitle) =>
-        set((state) => ({
-          workspaces: state.workspaces.map((w) =>
-            w._id === workspaceId
-              ? {
-                  ...w,
-                  boards: w.boards.map((b) =>
-                    b.id === boardId
-                      ? {
-                          ...b,
-                          cards: b.cards.map(
-                            (c: { id: string; title: string }) =>
-                              c.id === cardId ? { ...c, title: newTitle } : c
-                          ),
-                        }
-                      : b
-                  ),
-                }
-              : w
-          ),
-        })),
-
       moveCard: (
-        sourceWorkspaceId,
-        destWorkspaceId,
-        sourceBoardId,
-        destBoardId,
-        sourceIndex,
-        destIndex
+        sourceWorkspaceId: string,
+        destWorkspaceId: string,
+        sourceBoardId: string,
+        destBoardId: string,
+        sourceIndex: number,
+        destIndex: number
       ) =>
         set((state) => {
-          const movedCard: { id: string; title: string } | null = null;
+          const sourceWorkspace = state.workspaces.find(
+            (workspace) => workspace._id === sourceWorkspaceId
+          );
+          const destWorkspace = state.workspaces.find(
+            (workspace) => workspace._id === destWorkspaceId
+          );
 
-          if (movedCard) {
-            const updatedWorkspaces = state.workspaces.map((w) => {
-              // Destination workspace
-              if (w._id === destWorkspaceId) {
-                return {
-                  ...w,
-                  boards: w.boards.map((b) =>
-                    b.id === destBoardId
-                      ? {
-                          ...b,
-                          cards: [
-                            ...b.cards.slice(0, destIndex),
-                            movedCard!,
-                            ...b.cards.slice(destIndex),
-                          ],
-                        }
-                      : b
-                  ),
-                };
+          if (!sourceWorkspace || !destWorkspace) return state;
+
+          const sourceBoard = sourceWorkspace.boards.find(
+            (board) => board.id === sourceBoardId
+          );
+          const destBoard = destWorkspace.boards.find(
+            (board) => board.id === destBoardId
+          );
+
+          if (!sourceBoard || !destBoard) return state;
+
+          const [movedCard] = sourceBoard.cards.splice(sourceIndex, 1);
+          destBoard.cards.splice(destIndex, 0, movedCard);
+
+          return {
+            workspaces: state.workspaces.map((workspace) => {
+              if (workspace._id === sourceWorkspaceId) {
+                return { ...workspace, boards: sourceWorkspace.boards };
               }
-
-              return w;
-            });
-
-            return { workspaces: updatedWorkspaces };
-          }
-
-          return state;
+              if (workspace._id === destWorkspaceId) {
+                return { ...workspace, boards: destWorkspace.boards };
+              }
+              return workspace;
+            }),
+          };
         }),
-
-      addCard: (workspaceId, boardId, cardTitle) =>
+      deleteCard: (workspaceId: string, boardId: string, cardId: string) =>
         set((state) => ({
-          workspaces: state.workspaces.map((w) =>
-            w._id === workspaceId
+          workspaces: state.workspaces.map((workspace) =>
+            workspace._id === workspaceId
               ? {
-                  ...w,
-                  boards: w.boards.map((b) =>
-                    b.id === boardId
+                  ...workspace,
+                  boards: workspace.boards.map((board) =>
+                    board.id === boardId
                       ? {
-                          ...b,
-                          cards: [
-                            ...b.cards,
-                            {
-                              id: generateUniqueId(),
-                              title: cardTitle,
-                            },
-                          ],
+                          ...board,
+                          cards: board.cards.filter(
+                            (card) => card.id !== cardId
+                          ),
                         }
-                      : b
+                      : board
                   ),
                 }
-              : w
+              : workspace
           ),
         })),
-
-      addBoard: (boardName, workspaceId) =>
+      editCard: (
+        workspaceId: string,
+        boardId: string,
+        cardId: string,
+        newTitle: string
+      ) =>
         set((state) => ({
-          workspaces: state.workspaces.map((w) =>
-            w._id === workspaceId
+          workspaces: state.workspaces.map((workspace) =>
+            workspace._id === workspaceId
               ? {
-                  ...w,
+                  ...workspace,
+                  boards: workspace.boards.map((board) =>
+                    board.id === boardId
+                      ? {
+                          ...board,
+                          cards: board.cards.map((card) =>
+                            card.id === cardId
+                              ? { ...card, title: newTitle }
+                              : card
+                          ),
+                        }
+                      : board
+                  ),
+                }
+              : workspace
+          ),
+        })),
+      addBoard: (workspaceId: string, boardName: string) =>
+        set((state) => ({
+          workspaces: state.workspaces.map((workspace) =>
+            workspace._id === workspaceId
+              ? {
+                  ...workspace,
                   boards: [
-                    ...w.boards,
+                    ...workspace.boards,
                     {
                       id: generateUniqueId(),
                       name: boardName,
                       cards: [],
+                      position: workspace.boards.length,
                     },
                   ],
                 }
-              : w
+              : workspace
+          ),
+        })),
+      addCard: (workspaceId: string, boardId: string, cardTitle: string) =>
+        set((state) => ({
+          workspaces: state.workspaces.map((workspace) =>
+            workspace._id === workspaceId
+              ? {
+                  ...workspace,
+                  boards: workspace.boards.map((board) =>
+                    board.id === boardId
+                      ? {
+                          ...board,
+                          cards: [
+                            ...board.cards,
+                            { id: generateUniqueId(), title: cardTitle },
+                          ],
+                        }
+                      : board
+                  ),
+                }
+              : workspace
           ),
         })),
     }),
     {
       name: "workspace-storage",
-      version: 1,
     }
   )
 );
-
-// Helper function to move array items
-function moveInArray<T>(arr: T[], sourceIndex: number, destIndex: number): T[] {
-  const result = Array.from(arr);
-  const [removed] = result.splice(sourceIndex, 1);
-  result.splice(destIndex, 0, removed);
-  return result;
-}

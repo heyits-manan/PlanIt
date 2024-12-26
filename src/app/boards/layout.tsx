@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/NavBar";
-import { Session } from "inspector/promises";
 
 export const metadata: Metadata = {
   title: "Boards | PlanIt",

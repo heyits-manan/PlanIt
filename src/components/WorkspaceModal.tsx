@@ -15,8 +15,8 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({ onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (workspaceName.trim() && user?.id) {
-      const ownerId = user.id;
-
+      const ownerId = user.id; // Use Clerk's user ID directly as a string
+      console.log("Owner ID:", ownerId);
       const payload = {
         name: workspaceName.trim(),
         owner: ownerId, // Use Clerk's user ID
@@ -29,6 +29,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({ onClose }) => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "user-id": ownerId, // Pass user ID in headers
           },
           body: JSON.stringify(payload),
         });
@@ -60,26 +61,22 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({ onClose }) => {
             type="text"
             value={workspaceName}
             onChange={(e) => setWorkspaceName(e.target.value)}
-            placeholder="Enter workspace name"
-            className="w-full p-2 border rounded mb-4"
-            autoFocus
+            placeholder="Workspace Name"
+            className="w-full p-2 border border-gray-300 rounded mb-4"
           />
-          <div className="flex justify-end space-x-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Create
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Create Workspace
+          </button>
         </form>
+        <button
+          onClick={onClose}
+          className="mt-4 bg-gray-500 text-white px-4 py-2 rounded"
+        >
+          Close
+        </button>
       </div>
     </div>
   );

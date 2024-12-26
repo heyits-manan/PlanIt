@@ -11,27 +11,38 @@ export default function WorkspacesMain() {
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(
     null
   );
-  const [isLoading, setIsLoading] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
-    fetchWorkspaces();
+    const fetchData = async () => {
+      setIsLoading(true);
+      await fetchWorkspaces();
+      console.log(workspaces);
+      setIsLoading(false);
+    };
+    fetchData();
   }, [fetchWorkspaces]);
 
   useEffect(() => {
-    if (workspaces.length > 0 && !selectedWorkspaceId) {
+    if (workspaces && workspaces.length > 0 && !selectedWorkspaceId) {
       setSelectedWorkspaceId(workspaces[0]._id);
     }
   }, [workspaces, selectedWorkspaceId]);
 
-  const selectedWorkspace = workspaces.find(
+  const handleWorkspaceChange = (workspaceId: string) => {
+    setSelectedWorkspaceId(workspaceId);
+  };
+
+  const selectedWorkspace = workspaces?.find(
     (workspace) => workspace._id === selectedWorkspaceId
   );
 
-  const handleWorkspaceChange = (workspaceId: string) => {
-    setIsLoading(true);
-    setSelectedWorkspaceId(workspaceId);
-    setTimeout(() => setIsLoading(false), 500);
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-50 via-white to-blue-50 selection:bg-blue-100">
@@ -77,14 +88,10 @@ export default function WorkspacesMain() {
             </div>
           </div>
 
-          {/* Boards for Selected Workspace */}
-          <div className="p-6">
-            {isLoading ? (
-              <div className="flex justify-center items-center">
-                <Spinner />
-              </div>
-            ) : selectedWorkspace ? (
-              <BoardList workspaceId={selectedWorkspace._id} />
+          {/* Workspace Content */}
+          <div className="p-4">
+            {selectedWorkspace ? (
+              <BoardList workspaceId={selectedWorkspace?._id} />
             ) : (
               <p className="text-gray-500 text-center">
                 No workspaces found. Create a workspace to get started.

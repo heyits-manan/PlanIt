@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { Workspace } from "@/models/Workspace";
-import mongoose from "mongoose";
+import { getAuth } from "@clerk/nextjs/server";
 
 export async function POST(req: NextRequest) {
-  const { name, owner } = await req.json();
+  const { name } = await req.json();
+  const userId = req.headers.get("user-id"); // Assuming user ID is passed in headers
+
+  if (!userId) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     await connectToDatabase();
 
     const newWorkspace = new Workspace({
       name,
-      owner: new mongoose.Types.ObjectId(), // Generate a new ObjectId for the owner
+      owner: userId, // Use the provided owner ID as a string
     });
 
     await newWorkspace.save();
@@ -34,10 +39,21 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = getAuth(req);
+
+  console.log("UserId: ", auth.userId);
+
   try {
     await connectToDatabase();
 
-    const workspaces = await Workspace.find().populate("owner members");
+    const workspaces = await Workspace.find({ owner: auth.userId });
+
+    if (!workspaces || workspaces.length === 0) {
+      return NextResponse.json(
+        { message: "No workspaces found" },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({ workspaces }, { status: 200 });
   } catch (error) {

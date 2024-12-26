@@ -4,11 +4,16 @@ import Card from "@/components/Card";
 import { TrashIcon } from "lucide-react";
 import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 
+interface Card {
+  id: string;
+  title: string;
+}
+
 interface BoardProps {
   board: {
     id: string;
     name: string;
-    cards: { id: string; title: string }[];
+    cards: Card[];
   };
   index: number;
   workspaceId: string;
@@ -41,8 +46,7 @@ const Board: React.FC<BoardProps> = ({ board, index, workspaceId }) => {
               <TrashIcon size={16} />
             </button>
           </div>
-          <NewCardInput workspaceId={workspaceId} boardId={board.id} />{" "}
-          {/* Update this line */}
+          <NewCardInput workspaceId={workspaceId} boardId={board.id} />
           <Droppable droppableId={board.id}>
             {(provided) => (
               <div

@@ -31,13 +31,11 @@ const WorkspaceSchema = new mongoose.Schema(
       default: "",
     },
     owner: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type: String, // Store Clerk's user ID as a string
       required: true,
     },
     members: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "User", // Array of User IDs for workspace members
+      type: [String], // Array of User IDs for workspace members
       default: [],
     },
     boards: {
@@ -49,5 +47,7 @@ const WorkspaceSchema = new mongoose.Schema(
 );
 
 // Check if the model already exists before defining it
-export const Workspace =
+const Workspace =
   mongoose.models.Workspace || mongoose.model("Workspace", WorkspaceSchema);
+
+export { Workspace };
