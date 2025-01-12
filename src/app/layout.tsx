@@ -39,11 +39,6 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white`}
         >
           {children}
-          <footer className="w-full py-4 bg-blue-600 text-white text-center">
-            <p>
-              &copy; {new Date().getFullYear()} PlanIt. All rights reserved.
-            </p>
-          </footer>
         </body>
       </html>
     </ClerkProvider>
