@@ -5,9 +5,28 @@ import { useUser } from "@clerk/nextjs";
 import { ArrowRightIcon } from "lucide-react";
 import { Header } from "../components/Header";
 import { Features } from "../components/Features";
+import { useEffect } from "react";
 
 export default function Home() {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
+  useEffect(() => {
+    if (isSignedIn) {
+      try {
+        fetch("/api/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: user?.id,
+            email: user?.emailAddresses[0].emailAddress,
+          }),
+        });
+      } catch (error) {
+        console.error("Error creating user:", error);
+      }
+    }
+  }, [isSignedIn]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 selection:bg-blue-100">
