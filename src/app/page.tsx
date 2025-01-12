@@ -5,11 +5,9 @@ import { useUser } from "@clerk/nextjs";
 import { ArrowRightIcon } from "lucide-react";
 import { Header } from "../components/Header";
 import { Features } from "../components/Features";
-import { useCreateUser } from "../hooks/useCreateUser";
 
 export default function Home() {
   const { isSignedIn } = useUser();
-  useCreateUser();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 selection:bg-blue-100">
