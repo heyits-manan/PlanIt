@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       .returning();
 
     return NextResponse.json(newBoard[0]);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to create board" },
       { status: 500 }
@@ -53,7 +53,7 @@ export async function GET(req: Request) {
       .orderBy(boards.position);
 
     return NextResponse.json(boardList);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch boards" },
       { status: 500 }
@@ -72,7 +72,7 @@ export async function PUT(req: Request) {
       .returning();
 
     return NextResponse.json(updatedBoard[0]);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to update board" },
       { status: 500 }
@@ -94,7 +94,7 @@ export async function DELETE(req: Request) {
   try {
     await db.delete(boards).where(eq(boards.id, parseInt(boardId)));
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to delete board" },
       { status: 500 }

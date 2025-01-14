@@ -73,8 +73,8 @@ export async function DELETE(req: Request) {
       .returning();
 
     return NextResponse.json(deletedCard[0]);
-  } catch (error) {
-    console.error("Error deleting card:", error);
+  } catch {
+    console.error("Error deleting card");
     return NextResponse.json(
       { error: "Failed to delete card" },
       { status: 500 }
@@ -101,7 +101,7 @@ export async function GET(req: Request) {
       .orderBy(cards.position);
 
     return NextResponse.json(cardList);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch cards" },
       { status: 500 }
