@@ -26,8 +26,8 @@ export async function POST(req: Request) {
       .returning();
 
     return NextResponse.json(newCard[0]);
-  } catch (error) {
-    console.error("Error creating card:", error);
+  } catch {
+    console.error("Error creating card");
     return NextResponse.json(
       { error: "Failed to create card" },
       { status: 500 }
@@ -49,8 +49,8 @@ export async function PUT(req: Request) {
       .returning();
 
     return NextResponse.json(updatedCard[0]);
-  } catch (error) {
-    console.error("Error updating card:", error);
+  } catch {
+    console.error("Error updating card");
     return NextResponse.json(
       { error: "Failed to update card" },
       { status: 500 }

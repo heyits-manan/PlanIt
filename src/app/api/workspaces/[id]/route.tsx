@@ -9,14 +9,12 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const id = url.pathname.split("/").pop();
     const workspaceId = parseInt(id || "", 10); // Parse ID from path
-
     if (isNaN(workspaceId)) {
       return NextResponse.json(
         { error: "Invalid workspace ID" },
         { status: 400 }
       );
     }
-
     // Fetch the workspace from the database
     const workspace = await db
       .select()
