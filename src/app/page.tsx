@@ -29,7 +29,7 @@ export default function Home() {
   }, [isSignedIn]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 selection:bg-blue-100">
+    <div className="min-h-screen bg-gradient-to-br mt-20 ">
       <Header />
 
       <main className="container mx-auto px-4 pt-24 pb-12 flex flex-col items-center justify-center text-center">
@@ -67,9 +67,9 @@ export default function Home() {
       </main>
 
       <Features />
-      <footer className="w-full py-4 bg-blue-600 text-white text-center">
-        <p>&copy; {new Date().getFullYear()} PlanIt. All rights reserved.</p>
-      </footer>
+      {/* <footer className="w-full  py-4 bg-blue-600 text-white text-center">
+          <p>&copy; {new Date().getFullYear()} PlanIt. All rights reserved.</p>
+        </footer> */}
     </div>
   );
 }
