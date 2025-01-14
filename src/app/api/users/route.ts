@@ -1,42 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db"; // Adjust the import path as needed
+import { users } from "@/lib/schema"; // Adjust the import path as needed
+import { currentUser } from "@clerk/nextjs/server"; // Import Clerk's getAuth function
+import { eq } from "drizzle-orm"; // Import the 'eq' helper from Drizzle ORM
 
-import { User } from "@/models/User";
-import { connectToDatabase } from "@/lib/db";
-
-export async function POST(req: NextRequest) {
-  const { id, email, name, profilePicture } = await req.json();
-  console.log("From API: ", { id, email, name, profilePicture });
-
+export async function POST(request: NextRequest) {
   try {
-    await connectToDatabase();
-
-    const existingUser = await User.findOne({ id });
-
-    if (existingUser) {
-      return NextResponse.json(
-        { message: "User already exists" },
-        { status: 200 }
-      );
+    const user = await currentUser();
+    if (!user) {
+      return NextResponse.json({ message: "User not found" });
     }
 
-    const newUser = new User({
-      id,
-      email,
-      name,
-      profilePicture,
-    });
+    const email = user.emailAddresses[0].emailAddress;
+    if (!email) {
+      return NextResponse.json({ error: "Missing email" }, { status: 400 });
+    }
 
-    await newUser.save();
+    // Check if user already exists in the database
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .execute();
 
-    return NextResponse.json(
-      { message: "User created successfully", user: newUser },
-      { status: 201 }
-    );
+    if (existingUser.length > 0) {
+      return NextResponse.json({ message: "User already exists" });
+    }
+
+    // Insert the user if not found
+    await db.insert(users).values({ id: user.id, email }).execute();
+    return NextResponse.json({ message: "User created" });
   } catch (error) {
-    console.error("Error creating user:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error },
-      { status: 500 }
-    );
+    console.error(error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

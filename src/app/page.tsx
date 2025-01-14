@@ -5,14 +5,31 @@ import { useUser } from "@clerk/nextjs";
 import { ArrowRightIcon } from "lucide-react";
 import { Header } from "../components/Header";
 import { Features } from "../components/Features";
-import { useCreateUser } from "../hooks/useCreateUser";
+import { useEffect } from "react";
 
 export default function Home() {
-  const { isSignedIn } = useUser();
-  useCreateUser();
+  const { isSignedIn, user } = useUser();
+  useEffect(() => {
+    if (isSignedIn) {
+      try {
+        fetch("/api/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: user?.id,
+            email: user?.emailAddresses[0].emailAddress,
+          }),
+        });
+      } catch (error) {
+        console.error("Error creating user:", error);
+      }
+    }
+  }, [isSignedIn]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 selection:bg-blue-100">
+    <div className="min-h-screen bg-gradient-to-br mt-20 ">
       <Header />
 
       <main className="container mx-auto px-4 pt-24 pb-12 flex flex-col items-center justify-center text-center">
@@ -50,6 +67,9 @@ export default function Home() {
       </main>
 
       <Features />
+      {/* <footer className="w-full  py-4 bg-blue-600 text-white text-center">
+          <p>&copy; {new Date().getFullYear()} PlanIt. All rights reserved.</p>
+        </footer> */}
     </div>
   );
 }

@@ -20,7 +20,7 @@ export function Header() {
         <nav className="flex items-center space-x-6">
           {isSignedIn && (
             <Link
-              href="/boards"
+              href="/workspaces"
               className="flex items-center text-gray-700 hover:text-blue-600 
               transition-colors group"
             >
@@ -28,7 +28,7 @@ export function Header() {
                 className="mr-2 text-gray-500 group-hover:text-blue-600"
                 size={18}
               />
-              My Boards
+              My Workspace
             </Link>
           )}
         </nav>

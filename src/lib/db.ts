@@ -1,18 +1,5 @@
-import mongoose from "mongoose";
+import { drizzle } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
 
-let isConnected = false;
-
-export async function connectToDatabase() {
-  if (isConnected) {
-    return;
-  }
-
-  try {
-    await mongoose.connect(process.env.MONGODB_URI as string);
-    isConnected = true;
-    console.log("Connected to MongoDB");
-  } catch (error) {
-    console.error("Error connecting to MongoDB:", error);
-    throw new Error("Failed to connect to database");
-  }
-}
+const sql = neon(process.env.NEXT_PUBLIC_DATABASE_URL!);
+export const db = drizzle({ client: sql });
