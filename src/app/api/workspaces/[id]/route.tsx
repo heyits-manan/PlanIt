@@ -39,12 +39,18 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest) {
   try {
-    const workspaceId = parseInt(params.id, 10);
+    // Extract the workspace ID from the URL
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+    const workspaceId = parseInt(id || "", 10); // Parse ID from path
+    if (isNaN(workspaceId)) {
+      return NextResponse.json(
+        { error: "Invalid workspace ID" },
+        { status: 400 }
+      );
+    }
 
     await db.delete(workspaces).where(eq(workspaces.id, workspaceId)).execute();
 
@@ -58,12 +64,19 @@ export async function DELETE(
   }
 }
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest) {
   try {
-    const workspaceId = parseInt(params.id, 10);
+    // Extract the workspace ID from the URL
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+    const workspaceId = parseInt(id || "", 10); // Parse ID from path
+    if (isNaN(workspaceId)) {
+      return NextResponse.json(
+        { error: "Invalid workspace ID" },
+        { status: 400 }
+      );
+    }
+
     const { name } = await req.json();
 
     if (!name) {

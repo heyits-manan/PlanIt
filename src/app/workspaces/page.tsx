@@ -18,7 +18,6 @@ const WorkspacePage = () => {
   } | null>(null);
   const { user } = useUser();
 
-  console.log(workspaces);
   const createWorkspace = async () => {
     if (!workspaceName.trim()) return alert("Workspace name cannot be empty.");
 
