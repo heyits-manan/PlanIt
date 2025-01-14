@@ -40,3 +40,54 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const workspaceId = parseInt(params.id, 10);
+
+    await db.delete(workspaces).where(eq(workspaces.id, workspaceId)).execute();
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting workspace:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const workspaceId = parseInt(params.id, 10);
+    const { name } = await req.json();
+
+    if (!name) {
+      return NextResponse.json(
+        { error: "Workspace name is required" },
+        { status: 400 }
+      );
+    }
+
+    const updatedWorkspace = await db
+      .update(workspaces)
+      .set({ name })
+      .where(eq(workspaces.id, workspaceId))
+      .returning()
+      .execute();
+
+    return NextResponse.json(updatedWorkspace[0]);
+  } catch (error) {
+    console.error("Error updating workspace:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}

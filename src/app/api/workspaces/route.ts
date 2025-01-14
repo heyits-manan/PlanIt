@@ -30,6 +30,7 @@ export async function GET() {
     );
   }
 }
+
 export async function POST(request: NextRequest) {
   try {
     const { name, ownerId } = await request.json();
@@ -41,8 +42,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await db.insert(workspaces).values({ name, ownerId }).execute();
-    return NextResponse.json({ message: "Workspace created", name });
+    const result = await db
+      .insert(workspaces)
+      .values({ name, ownerId })
+      .returning()
+      .execute();
+    const workspaceId = result[0].id;
+
+    return NextResponse.json({
+      message: "Workspace created",
+      id: workspaceId,
+      name,
+    });
   } catch (error) {
     console.error("Error creating workspace:", error);
     return NextResponse.json(
