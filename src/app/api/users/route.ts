@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db"; // Adjust the import path as needed
 import { users } from "@/lib/schema"; // Adjust the import path as needed
 import { currentUser } from "@clerk/nextjs/server"; // Import Clerk's getAuth function
 import { eq } from "drizzle-orm"; // Import the 'eq' helper from Drizzle ORM
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const user = await currentUser();
     if (!user) {

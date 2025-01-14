@@ -4,7 +4,7 @@ import { workspaces } from "@/lib/schema";
 import { currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const user = await currentUser();
 

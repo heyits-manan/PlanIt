@@ -152,7 +152,10 @@ const WorkspaceDetailPage: React.FC = () => {
       const response = await fetch(`/api/boards`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: boardName, workspaceId: parseInt(id) }),
+        body: JSON.stringify({
+          name: boardName,
+          workspaceId: parseInt(id as string),
+        }),
       });
       if (response.ok) {
         const newBoard: Board = await response.json();

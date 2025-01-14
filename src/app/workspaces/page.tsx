@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useRouter } from "next/router";
+
 import { Home, Settings, PlusCircle } from "lucide-react";
 
 const WorkspacePage = () => {
