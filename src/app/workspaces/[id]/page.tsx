@@ -2,7 +2,17 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Loader2,
+  Layout,
+  Calendar,
+  MoreVertical,
+  Check,
+  X,
+} from "lucide-react";
 
 interface Card {
   id: number;
@@ -41,6 +51,8 @@ const WorkspaceDetailPage: React.FC = () => {
   const [newCard, setNewCard] = useState({ title: "", description: "" });
   const [editingCard, setEditingCard] = useState<Card | null>(null);
   const [editingBoard, setEditingBoard] = useState<Board | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
   const fetchCards = async (boardId: number): Promise<Card[]> => {
     try {
@@ -213,7 +225,24 @@ const WorkspaceDetailPage: React.FC = () => {
   };
 
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openMenuId && !(event.target as Element).closest(".board-menu")) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openMenuId]);
+
+  const toggleBoardMenu = (boardId: number, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setOpenMenuId(openMenuId === boardId ? null : boardId);
+  };
+
+  useEffect(() => {
     const fetchWorkspaceData = async () => {
+      setIsLoading(true);
       try {
         const workspaceResponse = await fetch(`/api/workspaces/${id}`);
         if (workspaceResponse.ok) {
@@ -224,277 +253,358 @@ const WorkspaceDetailPage: React.FC = () => {
         const boardsResponse = await fetch(`/api/boards?id=${id}`);
         if (boardsResponse.ok) {
           const boardsData: Board[] = await boardsResponse.json();
-
           const boardsWithCards = await Promise.all(
             boardsData.map(async (board) => {
               const cards = await fetchCards(board.id);
               return { ...board, cards };
             })
           );
-
           setBoards(boardsWithCards);
         }
       } catch (error) {
         console.error("Error fetching workspace data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchWorkspaceData();
   }, [id]);
 
-  if (!workspace) {
-    return <div>Loading workspace...</div>;
-  }
-
-  return (
-    <div className="min-h-screen p-6">
-      <h1 className="text-4xl font-bold mb-6">{workspace?.name}</h1>
-      <p className="text-gray-700">Workspace ID: {workspace?.id}</p>
-      <p className="text-gray-700">
-        Created At:{" "}
-        {workspace && new Date(workspace.createdAt).toLocaleString()}
-      </p>
-
-      <div className="mt-6 h-[calc(100vh-200px)]">
-        {" "}
-        {/* Fixed height container */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Boards</h2>
-          <button
-            onClick={() => setShowBoardModal(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Create New Board
-          </button>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-4" />
+          <p className="text-gray-600">Loading workspace...</p>
         </div>
-        {/* Scrollable container for boards */}
-        <div className="h-full overflow-x-auto overflow-y-hidden">
-          <div className="flex flex-row gap-8 pb-4 h-full">
-            {boards.map((board) => (
-              <div
-                key={board.id}
-                className="flex-shrink-0 bg-white p-4 w-80 rounded-xl shadow-lg border border-gray-200 h-full overflow-y-auto hover:shadow-xl transition-shadow duration-200"
-              >
-                <div className="flex justify-between items-center mb-4 sticky top-0 bg-white py-2 border-b">
-                  {editingBoard?.id === board.id ? (
-                    <input
-                      type="text"
-                      value={editingBoard.name}
-                      onChange={(e) =>
-                        setEditingBoard({
-                          ...editingBoard,
-                          name: e.target.value,
-                        })
-                      }
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                  ) : (
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      {board.name}
-                    </h3>
-                  )}
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() =>
-                        setShowCardModal({ ...showCardModal, [board.id]: true })
-                      }
-                      className="p-1 rounded hover:bg-gray-100 text-gray-500 hover:text-blue-500 transition-colors duration-200"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                    {editingBoard?.id === board.id ? (
-                      <>
-                        <button
-                          onClick={() => updateBoard(board.id)}
-                          className="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-blue-500 transition-colors duration-200"
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={() => setEditingBoard(null)}
-                          className="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-red-500 transition-colors duration-200"
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => setEditingBoard(board)}
-                          className="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-blue-500 transition-colors duration-200"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => deleteBoard(board.id)}
-                          className="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-red-500 transition-colors duration-200"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </>
-                    )}
-                  </div>
+      </div>
+    );
+  }
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-8 py-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {workspace?.name}
+              </h1>
+              <div className="flex items-center mt-2 text-sm text-gray-500 space-x-4">
+                <div className="flex items-center">
+                  <Layout className="w-4 h-4 mr-1" />
+                  <span>Workspace ID: {workspace?.id}</span>
                 </div>
-                <div className="space-y-3">
-                  {board.cards && board.cards.length > 0 ? (
-                    board.cards.map((card) => (
-                      <div
-                        key={card.id}
-                        className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
-                      >
-                        {editingCard?.id === card.id ? (
-                          <div className="space-y-2">
-                            <input
-                              type="text"
-                              value={editingCard.title}
-                              onChange={(e) =>
-                                setEditingCard({
-                                  ...editingCard,
-                                  title: e.target.value,
-                                })
-                              }
-                              className="w-full p-1 border rounded"
-                            />
-                            <textarea
-                              value={editingCard.description}
-                              onChange={(e) =>
-                                setEditingCard({
-                                  ...editingCard,
-                                  description: e.target.value,
-                                })
-                              }
-                              className="w-full p-1 border rounded text-sm"
-                            />
-                            <div className="flex justify-end space-x-2">
-                              <button
-                                onClick={() => setEditingCard(null)}
-                                className="px-2 py-1 text-sm bg-gray-200 rounded"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                onClick={() => updateCard(card.id, board.id)}
-                                className="px-2 py-1 text-sm bg-blue-500 text-white rounded"
-                              >
-                                Save
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div>
-                            <div className="flex justify-between items-start group">
-                              <h4 className="font-medium text-gray-800">
-                                {card.title}
-                              </h4>
-                              <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <button
-                                  onClick={() => setEditingCard(card)}
-                                  className="text-gray-400 hover:text-blue-500"
-                                >
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => deleteCard(card.id, board.id)}
-                                  className="text-gray-400 hover:text-red-500"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </div>
-                            {card.description && (
-                              <p className="text-sm text-gray-600 mt-1">
-                                {card.description}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-sm">No cards available.</p>
-                  )}
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  <span>
+                    Created{" "}
+                    {workspace &&
+                      new Date(workspace.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
-            ))}
+            </div>
+            <button
+              onClick={() => setShowBoardModal(true)}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              New Board
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Boards Container */}
+      <div className="p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="overflow-x-auto">
+            <div className="flex gap-6 pb-4">
+              {boards.map((board) => (
+                <div
+                  key={board.id}
+                  className="flex-shrink-0 w-80 bg-gray-100 rounded-xl overflow-hidden"
+                >
+                  {/* Board Header */}
+                  <div className="p-4 bg-white border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                      {editingBoard?.id === board.id ? (
+                        <div className="flex-1 flex items-center space-x-2">
+                          <input
+                            type="text"
+                            value={editingBoard.name}
+                            onChange={(e) =>
+                              setEditingBoard({
+                                ...editingBoard,
+                                name: e.target.value,
+                              })
+                            }
+                            className="flex-1 px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          />
+                          <button
+                            onClick={() => updateBoard(board.id)}
+                            className="p-1 rounded-md hover:bg-green-100 text-green-600"
+                          >
+                            <Check className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => setEditingBoard(null)}
+                            className="p-1 rounded-md hover:bg-red-100 text-red-600"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <h3 className="font-semibold text-gray-900">
+                          {board.name}
+                        </h3>
+                      )}
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={() =>
+                            setShowCardModal({
+                              ...showCardModal,
+                              [board.id]: true,
+                            })
+                          }
+                          className="p-1 rounded-md hover:bg-gray-100 text-gray-600 hover:text-blue-600"
+                          title="Add new card"
+                        >
+                          <Plus className="w-5 h-5" />
+                        </button>
+                        <div className="relative board-menu">
+                          <button
+                            onClick={(e) => toggleBoardMenu(board.id, e)}
+                            className="p-1 rounded-md hover:bg-gray-100 text-gray-600"
+                            title="More options"
+                          >
+                            <MoreVertical className="w-5 h-5" />
+                          </button>
+
+                          {/* Dropdown Menu */}
+                          {openMenuId === board.id && (
+                            <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                              <button
+                                onClick={() => {
+                                  setEditingBoard(board);
+                                  setOpenMenuId(null);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                              >
+                                <Pencil className="w-4 h-4" />
+                                <span>Edit Board</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  deleteBoard(board.id);
+                                  setOpenMenuId(null);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                <span>Delete Board</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cards Container */}
+                  <div className="p-4 space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
+                    {board.cards && board.cards.length > 0 ? (
+                      board.cards.map((card) => (
+                        <div
+                          key={card.id}
+                          className="group bg-white rounded-lg p-3 shadow-sm border border-gray-200 hover:shadow-md transition-all"
+                        >
+                          {editingCard?.id === card.id ? (
+                            <div className="space-y-2">
+                              <input
+                                type="text"
+                                value={editingCard.title}
+                                onChange={(e) =>
+                                  setEditingCard({
+                                    ...editingCard,
+                                    title: e.target.value,
+                                  })
+                                }
+                                className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                              />
+                              <textarea
+                                value={editingCard.description}
+                                onChange={(e) =>
+                                  setEditingCard({
+                                    ...editingCard,
+                                    description: e.target.value,
+                                  })
+                                }
+                                className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
+                                rows={3}
+                              />
+                              <div className="flex justify-end space-x-2">
+                                <button
+                                  onClick={() => setEditingCard(null)}
+                                  className="px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={() => updateCard(card.id, board.id)}
+                                  className="px-2 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                                >
+                                  Save
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div>
+                              <div className="flex items-start justify-between">
+                                <h4 className="font-medium text-gray-900">
+                                  {card.title}
+                                </h4>
+                                <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={() => setEditingCard(card)}
+                                    className="p-1 rounded hover:bg-gray-100 text-gray-500 hover:text-blue-600"
+                                  >
+                                    <Pencil className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      deleteCard(card.id, board.id)
+                                    }
+                                    className="p-1 rounded hover:bg-gray-100 text-gray-500 hover:text-red-600"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                              {card.description && (
+                                <p className="mt-2 text-sm text-gray-600">
+                                  {card.description}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500 text-sm">No cards yet</p>
+                        <button
+                          onClick={() =>
+                            setShowCardModal({
+                              ...showCardModal,
+                              [board.id]: true,
+                            })
+                          }
+                          className="mt-2 text-blue-600 text-sm hover:text-blue-700"
+                        >
+                          Add a card
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Create Board Modal */}
       {showBoardModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-6 shadow-lg w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Create New Board</h2>
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              Create New Board
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Add a new board to organize your tasks and ideas.
+            </p>
             <input
               type="text"
               value={boardName}
               onChange={(e) => setBoardName(e.target.value)}
               placeholder="Enter board name"
-              className="w-full p-2 border rounded mb-4"
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mb-4"
             />
-            <div className="flex justify-end space-x-4">
+            <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowBoardModal(false)}
-                className="py-2 px-4 rounded bg-gray-300 hover:bg-gray-400"
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={createBoard}
-                className="py-2 px-4 rounded bg-blue-500 text-white hover:bg-blue-600"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Create
+                Create Board
               </button>
             </div>
           </div>
         </div>
       )}
-      {Object.keys(showCardModal).map(
-        (boardId) =>
-          showCardModal[parseInt(boardId)] && (
-            <div
-              key={boardId}
-              className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-            >
-              <div className="bg-white rounded-lg p-6 shadow-lg w-full max-w-md">
-                <h2 className="text-xl font-bold mb-4">Create New Card</h2>
-                <input
-                  type="text"
-                  value={newCard.title}
-                  onChange={(e) =>
-                    setNewCard({ ...newCard, title: e.target.value })
+
+      {/* Create Card Modal */}
+      {Object.entries(showCardModal).map(([boardId, isVisible]) =>
+        isVisible ? (
+          <div
+            key={boardId}
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+          >
+            <div className="bg-white rounded-xl p-6 w-full max-w-md">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Create New Card
+              </h2>
+              <p className="text-sm text-gray-500 mb-4">
+                Add details about your new task or idea.
+              </p>
+              <input
+                type="text"
+                value={newCard.title}
+                onChange={(e) =>
+                  setNewCard({ ...newCard, title: e.target.value })
+                }
+                placeholder="Card title"
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mb-4"
+              />
+              <textarea
+                value={newCard.description}
+                onChange={(e) =>
+                  setNewCard({ ...newCard, description: e.target.value })
+                }
+                placeholder="Add a more detailed description..."
+                rows={4}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mb-4 resize-none"
+              />
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() =>
+                    setShowCardModal({
+                      ...showCardModal,
+                      [parseInt(boardId)]: false,
+                    })
                   }
-                  placeholder="Enter card title"
-                  className="w-full p-2 border rounded mb-4"
-                />
-                <textarea
-                  value={newCard.description}
-                  onChange={(e) =>
-                    setNewCard({ ...newCard, description: e.target.value })
-                  }
-                  placeholder="Enter card description"
-                  className="w-full p-2 border rounded mb-4"
-                />
-                <div className="flex justify-end space-x-4">
-                  <button
-                    onClick={() =>
-                      setShowCardModal({
-                        ...showCardModal,
-                        [parseInt(boardId)]: false,
-                      })
-                    }
-                    className="py-2 px-4 rounded bg-gray-300 hover:bg-gray-400"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => createCard(parseInt(boardId))}
-                    className="py-2 px-4 rounded bg-blue-500 text-white hover:bg-blue-600"
-                  >
-                    Create
-                  </button>
-                </div>
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => createCard(parseInt(boardId))}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Create Card
+                </button>
               </div>
             </div>
-          )
+          </div>
+        ) : null
       )}
     </div>
   );
