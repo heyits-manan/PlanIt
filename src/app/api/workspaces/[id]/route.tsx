@@ -2,20 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { workspaces } from "@/lib/schema";
 import { eq } from "drizzle-orm";
+import { currentUser } from "@clerk/nextjs/server";
 
 export async function GET(req: NextRequest) {
   try {
-    // Extract the workspace ID from the URL
+    const user = await currentUser();
+
+    if (!user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const url = new URL(req.url);
     const id = url.pathname.split("/").pop();
-    const workspaceId = parseInt(id || "", 10); // Parse ID from path
+    const workspaceId = parseInt(id || "", 10);
+
     if (isNaN(workspaceId)) {
       return NextResponse.json(
         { error: "Invalid workspace ID" },
         { status: 400 }
       );
     }
-    // Fetch the workspace from the database
+
     const workspace = await db
       .select()
       .from(workspaces)
@@ -29,9 +36,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    if (workspace[0].ownerId !== user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     return NextResponse.json(workspace[0]);
-  } catch (error) {
-    console.error("Error fetching workspace:", error);
+  } catch {
+    console.error("Error fetching workspace");
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -55,8 +66,8 @@ export async function DELETE(req: NextRequest) {
     await db.delete(workspaces).where(eq(workspaces.id, workspaceId)).execute();
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error deleting workspace:", error);
+  } catch {
+    console.error("Error deleting workspace");
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -94,8 +105,8 @@ export async function PUT(req: NextRequest) {
       .execute();
 
     return NextResponse.json(updatedWorkspace[0]);
-  } catch (error) {
-    console.error("Error updating workspace:", error);
+  } catch {
+    console.error("Error updating workspace.");
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

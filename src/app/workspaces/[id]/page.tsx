@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import {
   Plus,
@@ -40,6 +41,7 @@ interface Workspace {
 }
 
 const WorkspaceDetailPage: React.FC = () => {
+  const router = useRouter();
   const { id } = useParams();
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [boards, setBoards] = useState<Board[]>([]);
@@ -248,6 +250,9 @@ const WorkspaceDetailPage: React.FC = () => {
         if (workspaceResponse.ok) {
           const workspaceData: Workspace = await workspaceResponse.json();
           setWorkspace(workspaceData);
+        } else {
+          console.error("Error fetching workspace data:", workspaceResponse);
+          router.push("/workspaces");
         }
 
         const boardsResponse = await fetch(`/api/boards?id=${id}`);
@@ -281,6 +286,7 @@ const WorkspaceDetailPage: React.FC = () => {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
