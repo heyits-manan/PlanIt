@@ -54,13 +54,6 @@ export default function Home() {
                 Start Free
                 <ArrowRightIcon className="ml-2" size={20} />
               </Link>
-              <Link
-                href="/features"
-                className="px-6 py-3 border border-blue-500 text-blue-600 rounded-full 
-                text-lg font-medium hover:bg-blue-50 transition-all flex items-center justify-center"
-              >
-                Learn More
-              </Link>
             </div>
           )}
         </div>

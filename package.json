@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.5.1",
-    "@hello-pangea/dnd": "^17.0.0",
     "@neondatabase/serverless": "^0.10.4",
     "axios": "^1.7.7",
     "drizzle-orm": "^0.38.3",
@@ -20,6 +19,7 @@
     "next": "15.0.3",
     "postgres": "^3.4.5",
     "react": "^18.2.0",
+    "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
     "socket.io-client": "^4.8.1"
   },

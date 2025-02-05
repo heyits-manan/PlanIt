@@ -383,6 +383,36 @@ const WorkspaceDetailPage: React.FC = () => {
           </div>
         </Modal>
       ))}
+      <Modal
+        isOpen={showBoardModal}
+        onClose={() => setShowBoardModal(false)}
+        title="Create New Board"
+        description="Add a new board to organize your tasks and ideas."
+      >
+        <div>
+          <input
+            type="text"
+            value={boardName}
+            onChange={(e) => setBoardName(e.target.value)}
+            placeholder="Enter board name"
+            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mb-4"
+          />
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={() => setShowBoardModal(false)}
+              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={createBoard}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Create
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -17,6 +17,12 @@ const WorkspacePage = () => {
   const [workspaceName, setWorkspaceName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [editingWorkspace, setEditingWorkspace] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [newWorkspaceName, setNewWorkspaceName] = useState("");
+
   interface Workspace {
     id: string;
     name: string;
@@ -52,6 +58,39 @@ const WorkspacePage = () => {
       }
     } catch (error) {
       console.error("Error creating workspace:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateWorkspace = async () => {
+    if (!editingWorkspace || !newWorkspaceName.trim()) return;
+
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/workspaces/${editingWorkspace.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: newWorkspaceName }),
+      });
+
+      if (response.ok) {
+        setWorkspaces((prev) =>
+          prev.map((ws) =>
+            ws.id === editingWorkspace.id
+              ? { ...ws, name: newWorkspaceName }
+              : ws
+          )
+        );
+        setEditingWorkspace(null);
+      } else {
+        alert("Failed to update workspace. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error updating workspace:", error);
       alert("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -191,6 +230,7 @@ const WorkspacePage = () => {
                         Created {new Date().toLocaleDateString()}
                       </p>
                     </div>
+
                     <FolderOpen className="w-6 h-6 text-gray-400 group-hover:text-blue-500 transition-colors" />
                   </div>
                 </Link>
@@ -218,6 +258,39 @@ const WorkspacePage = () => {
           )}
         </div>
       </div>
+
+      {editingWorkspace && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-xl p-6 shadow-xl w-full max-w-md">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Edit Workspace Name
+            </h2>
+            <input
+              type="text"
+              value={newWorkspaceName}
+              onChange={(e) => setNewWorkspaceName(e.target.value)}
+              className="w-full p-3 rounded-lg border border-gray-200 mb-6 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            />
+
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setEditingWorkspace(null)}
+                className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={updateWorkspace}
+                disabled={isLoading}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              >
+                {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                <span>Update</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal */}
       {showModal && (
