@@ -21,7 +21,7 @@ const ComingSoonPage = () => {
               Settings Coming Soon
             </h1>
             <p className="text-gray-600 max-w-md">
-              We're working hard to bring you a new and improved settings
+              We&apos;re working hard to bring you a new and improved settings
               experience. Check back soon for exciting new features and
               customization options.
             </p>
