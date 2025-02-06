@@ -146,7 +146,7 @@ const WorkspacePage = () => {
                 </li>
                 <li>
                   <Link
-                    href="/settings"
+                    href="/workspaces/settings"
                     className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors"
                   >
                     <Settings className="w-5 h-5" />
