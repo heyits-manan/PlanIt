@@ -1,5 +1,6 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { Card as CardType } from "../../types";
+import { useState } from "react";
 
 interface CardProps {
   card: CardType;
@@ -22,6 +23,15 @@ export const Card = ({
   editingCard,
   setEditingCard,
 }: CardProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleExpand = (e: React.MouseEvent) => {
+    // Prevent expansion when clicking edit or delete buttons
+    if (!(e.target as HTMLElement).closest("button")) {
+      setIsExpanded(!isExpanded);
+    }
+  };
+
   if (isEditing) {
     return (
       <div className="space-y-2">
@@ -58,26 +68,51 @@ export const Card = ({
   }
 
   return (
-    <div>
+    <div onClick={toggleExpand} className="cursor-pointer">
       <div className="flex items-start justify-between">
-        <h4 className="font-medium text-gray-900">{card.title}</h4>
-        <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center">
+          <h4 className="font-medium text-gray-900">{card.title}</h4>
+          {card.description && (
+            <span className="ml-2 text-gray-400">
+              {isExpanded ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </span>
+          )}
+        </div>
+        <div
+          className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
-            onClick={() => onEdit(card)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(card);
+            }}
             className="p-1 rounded hover:bg-gray-100 text-gray-500 hover:text-blue-600"
           >
             <Pencil className="w-4 h-4" />
           </button>
           <button
-            onClick={() => onDelete(card.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(card.id);
+            }}
             className="p-1 rounded hover:bg-gray-100 text-gray-500 hover:text-red-600"
           >
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
-      {card.description && (
+      {card.description && isExpanded && (
         <p className="mt-2 text-sm text-gray-600">{card.description}</p>
+      )}
+      {card.description && !isExpanded && card.description.length > 0 && (
+        <p className="mt-2 text-sm text-gray-600 line-clamp-1 text-ellipsis">
+          {card.description}
+        </p>
       )}
     </div>
   );

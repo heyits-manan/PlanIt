@@ -227,7 +227,7 @@ const WorkspacePage = () => {
                         {workspace.name}
                       </h2>
                       <p className="mt-2 text-sm text-gray-500">
-                        Created {new Date().toLocaleDateString()}
+                        Updated {new Date().toLocaleDateString()}
                       </p>
                     </div>
 
