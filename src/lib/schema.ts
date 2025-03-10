@@ -11,6 +11,7 @@ export const users = pgTable("users", {
   id: varchar("id", { length: 36 }).primaryKey(), // Use Clerk's user ID or a UUID
   email: varchar("email", { length: 255 }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
+  name: varchar("name", { length: 255 }),
 });
 
 export const workspaces = pgTable("workspaces", {

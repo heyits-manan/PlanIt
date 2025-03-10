@@ -12,6 +12,7 @@ export async function POST() {
     }
 
     const email = user.emailAddresses[0].emailAddress;
+    const name = user.fullName;
     if (!email) {
       return NextResponse.json({ error: "Missing email" }, { status: 400 });
     }
@@ -28,7 +29,7 @@ export async function POST() {
     }
 
     // Insert the user if not found
-    await db.insert(users).values({ id: user.id, email }).execute();
+    await db.insert(users).values({ id: user.id, email, name }).execute();
     return NextResponse.json({ message: "User created" });
   } catch (error) {
     console.error(error);

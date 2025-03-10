@@ -20,6 +20,7 @@ export default function Home() {
           body: JSON.stringify({
             id: user?.id,
             email: user?.emailAddresses[0].emailAddress,
+            name: user?.fullName,
           }),
         });
       } catch (error) {
