@@ -1,0 +1,1 @@
+ALTER TABLE "cards" ALTER COLUMN "board_id" SET DATA TYPE integer;

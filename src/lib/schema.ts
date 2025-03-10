@@ -21,6 +21,7 @@ export const workspaces = pgTable("workspaces", {
     .notNull()
     .references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
+  ownerName: varchar("owner_name", { length: 255 }),
 });
 
 export const boards = pgTable("boards", {
@@ -31,6 +32,7 @@ export const boards = pgTable("boards", {
     .references(() => workspaces.id, { onDelete: "cascade" }),
   position: integer("position").notNull(), // For ordering boards/columns
   createdAt: timestamp("created_at").defaultNow(),
+  ownerName: varchar("owner_name", { length: 255 }),
 });
 
 export const cards = pgTable("cards", {

@@ -8,6 +8,62 @@
       "when": 1741623016029,
       "tag": "0000_amazing_silver_samurai",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1741623507483,
+      "tag": "0001_free_psynapse",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1741625384655,
+      "tag": "0002_remarkable_whiplash",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1741625452508,
+      "tag": "0003_ancient_mandrill",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1741625473919,
+      "tag": "0004_steep_post",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1741625521100,
+      "tag": "0005_giant_owl",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1741625584796,
+      "tag": "0006_stormy_lethal_legion",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1741625657190,
+      "tag": "0007_bent_hulk",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1741626438233,
+      "tag": "0008_previous_bloodstrike",
+      "breakpoints": true
     }
   ]
 }

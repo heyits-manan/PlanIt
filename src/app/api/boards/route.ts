@@ -3,10 +3,12 @@ import { db } from "@/lib/db";
 import { boards } from "@/lib/schema";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
+import { currentUser } from "@clerk/nextjs/server";
 
 export async function POST(req: Request) {
   try {
     const { name, workspaceId } = await req.json();
+    const user = await currentUser();
 
     // Get highest position for the new board
     const existingBoards = await db
@@ -22,6 +24,7 @@ export async function POST(req: Request) {
         name,
         workspaceId,
         position,
+        ownerName: user?.fullName,
       })
       .returning();
 

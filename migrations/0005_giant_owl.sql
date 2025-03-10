@@ -1,0 +1,1 @@
+ALTER TABLE "workspaces" ADD CONSTRAINT "workspaces_id_unique" UNIQUE("id");

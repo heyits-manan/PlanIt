@@ -69,7 +69,7 @@ const WorkspaceDetailPage: React.FC = () => {
           ]
         }
         
-        Create 2-5 boards with 2-6 cards each. Make sure the boards and cards are logical, well-organized, and helpful for the user's request.
+        Create as many boards and cards as told by the user. If the number is not specified, create as much as needed.
       `;
 
       const result = await model.generateContent(formattedPrompt);
