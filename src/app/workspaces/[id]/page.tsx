@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { useRouter } from "next/navigation";
-import { useParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { WorkspaceHeader } from "../../../components/workspace/WorkspaceHeader";
-import { Board } from "../../../components/workspace/Board";
-import { Modal } from "../../../components/workspace/Modal";
+import { BoardsContainer } from "../../../components/workspace/BoardsContainer";
+import { BoardModal } from "../../../components/workspace/BoardModal";
+import { AIBoardGeneratorModal } from "../../../components/workspace/AIBoardGeneratorModal";
+import { CardModal } from "../../../components/workspace/CardModal";
 import {
   Board as BoardType,
   Card as CardType,
@@ -31,132 +31,12 @@ const WorkspaceDetailPage: React.FC = () => {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
   const [showAIModal, setShowAIModal] = useState(false);
-  const [prompt, setPrompt] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [aiError, setAiError] = useState("");
-
-  const generateAIBoards = async () => {
-    if (!prompt.trim()) {
-      setAiError("Please enter a prompt");
-      return;
-    }
-
-    setAiError("");
-    setIsGenerating(true);
-
-    try {
-      const genAI = new GoogleGenerativeAI(
-        process.env.NEXT_PUBLIC_GOOGLE_API_KEY as string
-      );
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-      // Create a prompt that asks for structured JSON
-      const formattedPrompt = `
-        Create a kanban board structure based on the following request: "${prompt}"
-        
-        Respond ONLY with valid JSON in the following format:
-        {
-          "boards": [
-            {
-              "name": "Board Name",
-              "cards": [
-                {
-                  "title": "Card Title",
-                  "description": "Detailed description of the card"
-                }
-              ]
-            }
-          ]
-        }
-        
-        Create as many boards and cards as told by the user. If the number is not specified, create as much as needed.
-      `;
-
-      const result = await model.generateContent(formattedPrompt);
-      const responseText = result.response.text();
-
-      // Extract the JSON from the response
-      let jsonData;
-      try {
-        // First try to parse the entire response as JSON
-        jsonData = JSON.parse(responseText);
-      } catch (error) {
-        // If that fails, try to extract JSON from the response text
-        console.log("Error parsing JSON:", error);
-        const jsonMatch =
-          responseText.match(/```json\s*({[\s\S]*?})\s*```/) ||
-          responseText.match(/{[\s\S]*?}/);
-
-        if (jsonMatch && jsonMatch[1]) {
-          jsonData = JSON.parse(jsonMatch[1]);
-        } else {
-          throw new Error("Could not parse JSON from response");
-        }
-      }
-
-      // Create the boards and cards from the parsed JSON
-      if (jsonData && jsonData.boards && Array.isArray(jsonData.boards)) {
-        const workspaceId = parseInt(id as string);
-
-        // Create each board with its cards
-        for (const boardData of jsonData.boards) {
-          const boardResponse = await fetch(`/api/boards`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: boardData.name,
-              workspaceId,
-            }),
-          });
-
-          if (boardResponse.ok) {
-            const newBoard: BoardType = await boardResponse.json();
-            const cards: CardType[] = [];
-
-            // Create cards for this board
-            if (boardData.cards && Array.isArray(boardData.cards)) {
-              for (const cardData of boardData.cards) {
-                const cardResponse = await fetch("/api/cards", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    title: cardData.title,
-                    description: cardData.description || "",
-                    boardId: newBoard.id,
-                  }),
-                });
-
-                if (cardResponse.ok) {
-                  const card: CardType = await cardResponse.json();
-                  cards.push(card);
-                }
-              }
-            }
-
-            // Add the new board with its cards to the state
-            setBoards((prev) => [...prev, { ...newBoard, cards }]);
-          }
-        }
-
-        setShowAIModal(false);
-        setPrompt("");
-      } else {
-        throw new Error("Invalid response format from AI");
-      }
-    } catch (error) {
-      console.error("Error generating boards:", error);
-      setAiError("Failed to generate boards. Please try again.");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   const fetchCards = async (boardId: number): Promise<CardType[]> => {
     try {
       const response = await fetch(`/api/cards?boardId=${boardId}`);
       if (response.ok) {
-        const cards: CardType[] = await response.json();
-        return cards;
+        return await response.json();
       }
       return [];
     } catch (error) {
@@ -369,7 +249,7 @@ const WorkspaceDetailPage: React.FC = () => {
     };
 
     fetchWorkspaceData();
-  }, [id]);
+  }, [id, router]);
 
   if (isLoading) {
     return (
@@ -390,185 +270,55 @@ const WorkspaceDetailPage: React.FC = () => {
       />
 
       <div className="p-8">
-        <div className="w-full mx-auto mb-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-800">Boards</h2>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowAIModal(true)}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center"
-              >
-                <span className="mr-2">AI Generate Boards</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm-2-9a2 2 0 114 0 2 2 0 01-4 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <div className="flex gap-6 pb-4">
-              {boards.map((board) => (
-                <Board
-                  key={board.id}
-                  board={board}
-                  isEditing={editingBoard?.id === board.id}
-                  editingBoard={editingBoard}
-                  openMenuId={openMenuId}
-                  onAddCard={() =>
-                    setShowCardModal({ ...showCardModal, [board.id]: true })
-                  }
-                  onToggleMenu={toggleBoardMenu}
-                  onUpdateBoard={updateBoard}
-                  onCancelEdit={() => setEditingBoard(null)}
-                  onDeleteBoard={deleteBoard}
-                  onEditBoard={setEditingBoard}
-                  setEditingBoard={setEditingBoard}
-                  onEditCard={setEditingCard}
-                  onDeleteCard={deleteCard}
-                  onUpdateCard={updateCard}
-                  editingCard={editingCard}
-                  setEditingCard={setEditingCard}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+        <BoardsContainer
+          boards={boards}
+          editingBoard={editingBoard}
+          openMenuId={openMenuId}
+          editingCard={editingCard}
+          setShowCardModal={setShowCardModal}
+          showCardModal={showCardModal}
+          toggleBoardMenu={toggleBoardMenu}
+          updateBoard={updateBoard}
+          setEditingBoard={setEditingBoard}
+          deleteBoard={deleteBoard}
+          setEditingCard={setEditingCard}
+          deleteCard={deleteCard}
+          updateCard={updateCard}
+          setShowAIModal={setShowAIModal}
+        />
       </div>
 
-      {/* Create Board Modal */}
-      <Modal
+      {/* Modals */}
+      <BoardModal
         isOpen={showBoardModal}
         onClose={() => setShowBoardModal(false)}
-        title="Create New Board"
-        description="Add a new board to organize your tasks and ideas."
-      >
-        <div>
-          <input
-            type="text"
-            value={boardName}
-            onChange={(e) => setBoardName(e.target.value)}
-            placeholder="Enter board name"
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mb-4"
-          />
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={() => setShowBoardModal(false)}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={createBoard}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Create Board
-            </button>
-          </div>
-        </div>
-      </Modal>
+        boardName={boardName}
+        setBoardName={setBoardName}
+        onCreateBoard={createBoard}
+      />
 
-      {/* AI Generate Boards Modal */}
-      <Modal
+      <AIBoardGeneratorModal
         isOpen={showAIModal}
         onClose={() => setShowAIModal(false)}
-        title="AI Generate Boards"
-        description="Describe what kind of boards and cards you want to create, and our AI will generate them for you."
-      >
-        <div>
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Example: Create a project management setup for a website redesign project with appropriate boards and tasks..."
-            rows={6}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mb-4 resize-none"
-          />
-          {aiError && <p className="text-red-500 mb-3">{aiError}</p>}
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={() => setShowAIModal(false)}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-              disabled={isGenerating}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={generateAIBoards}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center"
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Generating...
-                </>
-              ) : (
-                "Generate Boards"
-              )}
-            </button>
-          </div>
-        </div>
-      </Modal>
+        workspaceId={parseInt(id as string)}
+        onBoardsCreated={(newBoards) => {
+          setBoards((prev) => [...prev, ...newBoards]);
+        }}
+      />
 
       {/* Create Card Modal */}
       {Object.entries(showCardModal).map(([boardId, isVisible]) => (
-        <Modal
+        <CardModal
           key={boardId}
           isOpen={isVisible}
           onClose={() =>
             setShowCardModal({ ...showCardModal, [parseInt(boardId)]: false })
           }
-          title="Create New Card"
-          description="Add details about your new task or idea."
-        >
-          <div>
-            <input
-              type="text"
-              value={newCard.title}
-              onChange={(e) =>
-                setNewCard({ ...newCard, title: e.target.value })
-              }
-              placeholder="Card title"
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mb-4"
-            />
-            <textarea
-              value={newCard.description}
-              onChange={(e) =>
-                setNewCard({ ...newCard, description: e.target.value })
-              }
-              placeholder="Add a more detailed description..."
-              rows={4}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mb-4 resize-none"
-            />
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() =>
-                  setShowCardModal({
-                    ...showCardModal,
-                    [parseInt(boardId)]: false,
-                  })
-                }
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => createCard(parseInt(boardId))}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Create Card
-              </button>
-            </div>
-          </div>
-        </Modal>
+          cardData={newCard}
+          setCardData={setNewCard}
+          onSubmit={() => createCard(parseInt(boardId))}
+          isEditing={false}
+        />
       ))}
     </div>
   );
