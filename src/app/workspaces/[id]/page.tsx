@@ -7,12 +7,10 @@ import {
   Plus,
   Settings,
   Star,
-  ChevronDown,
   MoreHorizontal,
   Sparkles,
 } from "lucide-react";
-import { WorkspaceHeader } from "../../../components/workspace/WorkspaceHeader";
-import { BoardsContainer } from "../../../components/workspace/BoardsContainer";
+
 import { BoardModal } from "../../../components/workspace/BoardModal";
 import { AIBoardGeneratorModal } from "../../../components/workspace/AIBoardGeneratorModal";
 import { CardModal } from "../../../components/workspace/CardModal";

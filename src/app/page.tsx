@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import {
-  ArrowRightIcon,
-  CheckCircle,
-  Zap,
-  Globe,
-  Wrench,
-  LayoutDashboardIcon,
-} from "lucide-react";
+import { ArrowRightIcon, CheckCircle, Zap, Globe, Wrench } from "lucide-react";
 
 import { useEffect } from "react";
 
