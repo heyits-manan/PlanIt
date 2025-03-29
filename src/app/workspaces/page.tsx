@@ -106,11 +106,10 @@ const WorkspacePage = () => {
           const data = await response.json();
           setWorkspaces(data);
         } else {
-          alert("Failed to fetch workspaces. Please try again.");
+          console.log("Failed to fetch workspaces");
         }
       } catch (error) {
         console.error("Error fetching workspaces:", error);
-        alert("An error occurred. Please try again.");
       } finally {
         setIsLoading(false);
       }

@@ -21,7 +21,14 @@ export async function GET() {
       .where(eq(workspaces.ownerId, user.id))
       .execute();
 
-    return NextResponse.json(data);
+    if (!data.length) {
+      return NextResponse.json(
+        { message: "No workspaces found" },
+        { status: 404 }
+      );
+    } else {
+      return NextResponse.json(data);
+    }
   } catch (error) {
     console.error("Error fetching workspaces:", error);
     return NextResponse.json(
