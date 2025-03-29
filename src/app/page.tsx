@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import { ArrowRightIcon, CheckCircle, Zap, Globe, Wrench } from "lucide-react";
+import { ArrowRightIcon, Zap, Globe, Wrench, Sparkles } from "lucide-react";
+import Header from "@/components/Header";
 
 import { useEffect } from "react";
 
@@ -30,14 +31,9 @@ export default function Home() {
   }, [isSignedIn]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-blue-50">
-      <header className="top-0 left-0 right-0 z-50 bg-white/90  ">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-gray-800">PlanIt</span>
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-white to-blue-50 ">
+      {/* Header */}
+      <Header />
 
       <main className="container mx-auto px-4 pt-28 pb-24">
         {/* Hero Section */}
@@ -55,41 +51,6 @@ export default function Home() {
               track, and achieve more with our intuitive, powerful board
               management system.
             </p>
-
-            {!isSignedIn ? (
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  href="/sign-up"
-                  className="px-8 py-4 bg-blue-600 text-white rounded-lg text-lg font-medium 
-                  shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center group"
-                >
-                  Start Free
-                  <ArrowRightIcon
-                    className="ml-2 group-hover:translate-x-1 transition-transform"
-                    size={20}
-                  />
-                </Link>
-                <Link
-                  href="/features"
-                  className="px-8 py-4 border border-gray-300 text-gray-700 rounded-lg text-lg font-medium 
-                  hover:bg-gray-50 transition-all flex items-center justify-center"
-                >
-                  Learn More
-                </Link>
-              </div>
-            ) : (
-              <Link
-                href="/workspaces"
-                className=" py-4 bg-blue-600 text-white rounded-lg  text-lg font-medium 
-                shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center group"
-              >
-                Go to My Workspace
-                <ArrowRightIcon
-                  className="ml-2 group-hover:translate-x-1 transition-transform"
-                  size={20}
-                />
-              </Link>
-            )}
           </div>
           <div className="relative w-full max-w-lg">
             <div className="absolute -top-4 -right-4 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob"></div>
@@ -120,10 +81,10 @@ export default function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                icon: <CheckCircle className="text-green-500" size={24} />,
-                title: "Simple Task Management",
+                icon: <Sparkles className="text-purple-500" size={24} />,
+                title: "AI-Powered Board Generation",
                 description:
-                  "Create, organize, and track tasks with our intuitive drag-and-drop interface.",
+                  "Create complete project boards instantly with our AI that automatically generates tasks, timelines, and workflows based on your project needs.",
               },
               {
                 icon: <Wrench className="text-blue-500" size={24} />,
