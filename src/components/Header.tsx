@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { ArrowRightIcon, Menu, X, ChevronDown } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function Header() {
   const { isSignedIn } = useUser();
@@ -19,9 +20,7 @@ export default function Header() {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-md bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-              <span className="text-white font-bold">P</span>
-            </div>
+            <Image src="/favicon-32x32.png" alt="Logo" width={30} height={30} />
             <span className="text-2xl font-bold text-gray-800">PlanIt</span>
           </Link>
 
@@ -56,21 +55,21 @@ export default function Header() {
               {isDropdownOpen && (
                 <div className="absolute mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-10 border border-gray-100">
                   <Link
-                    href="/blog"
+                    href="/"
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-50"
                     onClick={() => setIsDropdownOpen(false)}
                   >
                     Blog
                   </Link>
                   <Link
-                    href="/tutorials"
+                    href="/"
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-50"
                     onClick={() => setIsDropdownOpen(false)}
                   >
                     Tutorials
                   </Link>
                   <Link
-                    href="/support"
+                    href="/"
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-50"
                     onClick={() => setIsDropdownOpen(false)}
                   >

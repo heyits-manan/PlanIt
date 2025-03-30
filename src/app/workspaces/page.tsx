@@ -21,15 +21,15 @@ const WorkspacePage = () => {
     id: string;
     name: string;
   } | null>(null);
+
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const { user } = useUser();
   const [newWorkspaceName, setNewWorkspaceName] = useState("");
 
   interface Workspace {
     id: string;
     name: string;
   }
-
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const { user } = useUser();
 
   const filteredWorkspaces = workspaces.filter((workspace) =>
     workspace.name.toLowerCase().includes(searchQuery.toLowerCase())

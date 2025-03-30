@@ -31,7 +31,7 @@ export default function Home() {
   }, [isSignedIn]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-blue-50 ">
+    <div className="min-h-screen pt-20 bg-gradient-to-br from-white to-blue-50 ">
       {/* Header */}
       <Header />
 

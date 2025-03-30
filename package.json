@@ -10,10 +10,9 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.5.1",
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
     "@google/generative-ai": "^0.23.0",
+    "@liveblocks/client": "^2.22.2",
+    "@liveblocks/react": "^2.22.2",
     "@neondatabase/serverless": "^0.10.4",
     "axios": "^1.8.1",
     "drizzle-orm": "^0.38.3",
@@ -21,11 +20,10 @@
     "lucide-react": "^0.462.0",
     "mongoose": "^8.9.2",
     "next": "15.0.3",
-    "openai": "^4.86.1",
+    "next-auth": "^4.24.11",
     "postgres": "^3.4.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "socket.io-client": "^4.8.1"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/node": "^20",
