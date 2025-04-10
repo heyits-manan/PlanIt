@@ -36,13 +36,15 @@ export async function GET(req: NextRequest) {
       );
     }
 
+
+
     const isMember = await db
       .select()
       .from(workspaceMembers)
       .where(eq(workspaceMembers.workspaceId, workspace[0].id))
       .execute();
 
-    if (isMember.length === 0) {
+    if (isMember.length === 0 && workspace[0].ownerId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
