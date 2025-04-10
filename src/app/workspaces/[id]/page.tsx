@@ -19,6 +19,7 @@ import {
   Card as CardType,
   Workspace,
 } from "../../../types";
+import { AddContributorModal } from "@/components/workspace/AddContributorModal";
 
 const WorkspaceDetailPage: React.FC = () => {
   const router = useRouter();
@@ -36,7 +37,9 @@ const WorkspaceDetailPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [showAIModal, setShowAIModal] = useState(false);
+  const [showContributorModal, setShowContributorModal] = useState(false);
   const [activeView, setActiveView] = useState("boards");
+  const [contributors, setContributors] = useState([]);
 
   // Logic functions remain unchanged
   const fetchCards = async (boardId: number): Promise<CardType[]> => {
@@ -214,6 +217,26 @@ const WorkspaceDetailPage: React.FC = () => {
   };
 
   useEffect(() => {
+    const fetchContributors = async () => {
+      try {
+        const response = await fetch(`/api/workspaces/${id}/contributors`);
+        if (response.ok) {
+          const contributorResponse= await response.json();
+          setContributors(contributorResponse)
+          console.log("Contributors:", contributors);
+          // Update state to display contributors
+        } else {
+          console.error("Failed to fetch contributors");
+        }
+      } catch (error) {
+        console.error("Error fetching contributors:", error);
+      }
+    };
+  
+    fetchContributors();
+  }, []);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (openMenuId && !(event.target as Element).closest(".board-menu")) {
         setOpenMenuId(null);
@@ -300,6 +323,9 @@ const WorkspaceDetailPage: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-2">
+              <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setShowContributorModal(true)}>
+                Add Contributors
+              </button>
               <button
                 onClick={() => setShowAIModal(true)}
                 className="px-4 py-2 bg-indigo-100 text-indigo-600 rounded-lg font-medium text-sm hover:bg-indigo-200 transition-colors flex items-center"
@@ -363,6 +389,7 @@ const WorkspaceDetailPage: React.FC = () => {
               Files
             </button>
           </div>
+          
         </div>
       </header>
 
@@ -610,6 +637,12 @@ const WorkspaceDetailPage: React.FC = () => {
           setBoards((prev) => [...prev, ...newBoards]);
         }}
       />
+
+<AddContributorModal
+  isOpen={showContributorModal}
+  onClose={() => setShowContributorModal(false)}
+  workspaceId={parseInt(id as string)}
+/>
 
       {/* Create Card Modal */}
       {Object.entries(showCardModal).map(([boardId, isVisible]) => (

@@ -64,6 +64,13 @@
       "when": 1741626438233,
       "tag": "0008_previous_bloodstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1744094017095,
+      "tag": "0009_sour_crystal",
+      "breakpoints": true
     }
   ]
 }

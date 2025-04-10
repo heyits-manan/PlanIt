@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { workspaces } from "@/lib/schema";
+import { workspaces,workspaceMembers } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { currentUser } from "@clerk/nextjs/server";
 
@@ -36,7 +36,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    if (workspace[0].ownerId !== user.id) {
+    const isMember = await db
+      .select()
+      .from(workspaceMembers)
+      .where(eq(workspaceMembers.workspaceId, workspace[0].id))
+      .execute();
+
+    if (isMember.length === 0) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

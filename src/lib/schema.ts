@@ -5,6 +5,7 @@ import {
   text,
   integer,
   timestamp,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
@@ -14,6 +15,9 @@ export const users = pgTable("users", {
   name: varchar("name", { length: 255 }),
 });
 
+// Create role enum for workspace members
+export const workspaceMemberRoleEnum = pgEnum("workspace_member_role", ["owner", "editor", "viewer"]);
+
 export const workspaces = pgTable("workspaces", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
@@ -22,6 +26,22 @@ export const workspaces = pgTable("workspaces", {
     .references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   ownerName: varchar("owner_name", { length: 255 }),
+  
+});
+
+// Separate table for workspace contributors/members
+export const workspaceMembers = pgTable("workspace_members", {
+  id: serial("id").primaryKey(),
+  workspaceId: integer("workspace_id")
+    .notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
+  userId: varchar("user_id", { length: 36 })
+    .references(() => users.id, { onDelete: "cascade" }),
+  email: varchar("email", { length: 255 }).notNull(),
+  role: workspaceMemberRoleEnum("role").notNull().default("editor"),
+  invitedAt: timestamp("invited_at").defaultNow(),
+  joinedAt: timestamp("joined_at"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, accepted, rejected
 });
 
 export const boards = pgTable("boards", {

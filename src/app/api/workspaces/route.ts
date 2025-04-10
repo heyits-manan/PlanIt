@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { workspaces } from "@/lib/schema";
+import { workspaces, workspaceMembers } from "@/lib/schema";
 import { currentUser } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -21,13 +21,52 @@ export async function GET() {
       .where(eq(workspaces.ownerId, user.id))
       .execute();
 
+    if (!user?.id || !user.emailAddresses.length) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const userEmail = user.emailAddresses[0].emailAddress;
+
+    // Get workspaces where user is owner
+    const ownedWorkspaces = await db
+      .select()
+      .from(workspaces)
+      .where(eq(workspaces.ownerId, user.id));
+
+    // Get workspaces where user is a member with accepted status
+    const memberWorkspaceIds = await db
+      .select({ workspaceId: workspaceMembers.workspaceId })
+      .from(workspaceMembers)
+      .where(eq(workspaceMembers.email, userEmail));
+
+    // Get the full workspace details for member workspaces
+    const memberWorkspaces =
+      memberWorkspaceIds.length > 0
+        ? await db
+            .select()
+            .from(workspaces)
+            .where(
+              or(
+                ...memberWorkspaceIds.map((m) =>
+                  eq(workspaces.id, m.workspaceId)
+                )
+              )
+            )
+        : [];
+
+    // Combine both arrays and mark the user's role in each workspace
+    const allWorkspaces = [
+      ...ownedWorkspaces.map((w) => ({ ...w, role: "owner" })),
+      ...memberWorkspaces.map((w) => ({ ...w, role: "member" })),
+    ];
+
     if (!data.length) {
       return NextResponse.json(
         { message: "No workspaces found" },
         { status: 404 }
       );
     } else {
-      return NextResponse.json(data);
+      return NextResponse.json(allWorkspaces);
     }
   } catch (error) {
     console.error("Error fetching workspaces:", error);
