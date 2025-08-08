@@ -11,7 +11,7 @@ export default function Home() {
   const { isSignedIn, user } = useUser();
 
   useEffect(() => {
-    if (isSignedIn) {
+    if (isSignedIn && user) {
       try {
         fetch("/api/users", {
           method: "POST",
@@ -19,16 +19,16 @@ export default function Home() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            id: user?.id,
-            email: user?.emailAddresses[0].emailAddress,
-            name: user?.fullName,
+            id: user.id,
+            email: user.emailAddresses[0].emailAddress,
+            name: user.fullName,
           }),
         });
       } catch (error) {
         console.error("Error creating user:", error);
       }
     }
-  }, [isSignedIn]);
+  }, [isSignedIn, user]);
 
   return (
     <div className="min-h-screen pt-20 bg-gradient-to-br from-white to-blue-50 ">

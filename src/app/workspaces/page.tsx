@@ -105,7 +105,7 @@ const WorkspacePage = () => {
         const response = await fetch("api/workspaces");
         if (response.ok) {
           const data = await response.json();
-          console.log(data)
+          console.log(data);
           setWorkspaces(data);
         } else {
           console.log("Failed to fetch workspaces");
@@ -227,9 +227,7 @@ const WorkspacePage = () => {
                       <h2 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                         {workspace.name}
                       </h2>
-                      <p>
-                        {workspace.role}
-                      </p>
+                      <p>{workspace.role}</p>
                       <p className="mt-2 text-sm text-gray-500">
                         Updated {new Date().toLocaleDateString()}
                       </p>

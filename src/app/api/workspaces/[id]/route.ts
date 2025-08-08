@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { workspaces,workspaceMembers } from "@/lib/schema";
+import { workspaces, workspaceMembers } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { currentUser } from "@clerk/nextjs/server";
 
@@ -35,8 +35,6 @@ export async function GET(req: NextRequest) {
         { status: 404 }
       );
     }
-
-
 
     const isMember = await db
       .select()

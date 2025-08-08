@@ -10,19 +10,16 @@ export async function GET() {
 
     if (!user?.id) {
       return NextResponse.json(
-        { error: "Owner ID is required" },
-        { status: 400 }
+        { error: "User not authenticated" },
+        { status: 401 }
       );
     }
 
-    const data = await db
-      .select({ name: workspaces.name, id: workspaces.id })
-      .from(workspaces)
-      .where(eq(workspaces.ownerId, user.id))
-      .execute();
-
-    if (!user?.id || !user.emailAddresses.length) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    if (!user.emailAddresses.length) {
+      return NextResponse.json(
+        { error: "User email not found" },
+        { status: 400 }
+      );
     }
 
     const userEmail = user.emailAddresses[0].emailAddress;
@@ -60,14 +57,8 @@ export async function GET() {
       ...memberWorkspaces.map((w) => ({ ...w, role: "member" })),
     ];
 
-    if (!data.length) {
-      return NextResponse.json(
-        { message: "No workspaces found" },
-        { status: 404 }
-      );
-    } else {
-      return NextResponse.json(allWorkspaces);
-    }
+    // Return all workspaces (empty array if none found)
+    return NextResponse.json(allWorkspaces);
   } catch (error) {
     console.error("Error fetching workspaces:", error);
     return NextResponse.json(
